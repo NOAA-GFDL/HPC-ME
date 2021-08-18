@@ -52,11 +52,14 @@ spack:
       version: [2.2.26]
     hdf5: 
       version: [1.10.6]
-    netcdf: 
-      version_c: [4.7.4]
-      variants: +parallel-netcdf maxdims=65536 maxvars=524288
-      version_f: [4.5.3]
-      version_cxx: 4.3.1
+    netcdf-c:
+      version: [4.7.4]
+    netcdf-cxx:
+      version: [4.3.1]
+    netcdf-fortran:
+      version: [4.5.3]
+    parallel-netcdf:
+      version: [1.12.2]
     nccmp: 
       version: [1.8.7.0]
     esmf: 
