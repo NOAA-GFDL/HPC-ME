@@ -110,7 +110,7 @@ spack:
       version: [1.2.2]
 
   specs:
-  - env-model
+  - amr-wind 
 
   compilers:
   - compiler:
@@ -121,7 +121,7 @@ spack:
         f77: /usr/bin/gfortran
         fc: /usr/bin/gfortran
       flags: {}
-      operating_system: centos:7.9.2009
+      operating_system: centos:7.9.2009-x86_64
       target: x86_64
       modules: []
       environment: {}

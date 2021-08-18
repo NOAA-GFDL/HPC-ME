@@ -16,4 +16,4 @@ RUN . /opt/spack/share/spack/setup-env.sh \
  && spack clean -a
 
 RUN echo . /opt/spack/share/spack/setup-env.sh >> /etc/bash.bashrc \
- && echo spack load env-model >> /etc/bash.bashrc
+ && echo spack load amr-wind >> /etc/bash.bashrc
