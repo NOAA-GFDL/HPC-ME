@@ -5,7 +5,8 @@ BUILD_TAG=${BUILD_TAG:-${BUILD_DATE}}
 BUILD_REPO=$(git config --get remote.origin.url)
 BUILD_REPO_REF=$(git log -1 --format="%H")
 
-REGISTRY=${REGISTRY:-chrisblanton}
+# set $REGISTRY to the Docker username/registry to use, otherwise will default to $USER
+REGISTRY=${REGISTRY:-$USER}
 OUTPUT_IMAGE="${REGISTRY}/rhel8-spack-x86_64:${BUILD_TAG}-gcc11.2"
 
 SPACK_REPO=https://github.com/spack/spack.git
