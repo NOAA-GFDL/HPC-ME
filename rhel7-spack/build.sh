@@ -10,9 +10,16 @@ REGISTRY=${REGISTRY:-$USER}
 OUTPUT_IMAGE="${REGISTRY}/rhel8-spack-x86_64:${BUILD_TAG}-gcc11.2"
 
 SPACK_REPO=https://github.com/spack/spack.git
+# Set the spack version here
+# v0.13.3 is old, 2019-12
+# latest tag is v0.16.2 (2021-05)
+# most updated is develop
 SPACK_REPO_REF=v0.16.2
 
+E4S_BASE_IMAGE=rhel8-runner-x86_64:2021-09-01-gcc11.2
+
 docker build \
+  --build-arg E4S_BASE_IMAGE="${E4S_BASE_IMAGE}" \
   --build-arg BUILD_DATE="${BUILD_DATE}" \
   --build-arg BUILD_REPO="${BUILD_REPO}" \
   --build-arg BUILD_REPO_REF="${BUILD_REPO_REF}" \
