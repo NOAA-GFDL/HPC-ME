@@ -14,7 +14,8 @@ SPACK_REPO=https://github.com/spack/spack.git
 # v0.13.3 is old, 2019-12
 # latest tag is v0.16.2 (2021-05)
 # most updated is develop
-SPACK_REPO_REF=v0.16.2
+
+SPACK_REPO_REF=develop
 
 E4S_BASE_IMAGE=rhel8-runner-x86_64:2021-09-01-gcc11.2
 
