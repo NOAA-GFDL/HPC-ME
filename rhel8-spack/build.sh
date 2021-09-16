@@ -17,7 +17,14 @@ SPACK_REPO=https://github.com/spack/spack.git
 
 SPACK_REPO_REF=develop
 
-E4S_BASE_IMAGE=rhel8-runner-x86_64:2021-09-01-gcc11.2
+#E4S_BASE_IMAGE=rhel8-runner-x86_64:2021-09-01-gcc11.2
+
+
+E4S_BASE_IMAGE=rhel8-runner-x86_64:lscmdb02-d/data/docker-dev/docker-php
+
+docker login gitlab.gfdl.noaa.gov \
+  -u $CI_REGISTRY_USER \
+  -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
 
 docker build \
   --build-arg E4S_BASE_IMAGE="${E4S_BASE_IMAGE}" \

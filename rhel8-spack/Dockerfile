@@ -14,15 +14,14 @@ ARG SPACK_REPO_REF
 # these instructions are from one of the current non-runner ecpe4s dockerhub images
 RUN git clone ${SPACK_REPO} \
     && cd spack \
-    && git checkout d54a692e099ef749df382a97b913be2bd6c0a251 
+    && git checkout c0122242ee90f0fe37edceb8d25f5ebd4a48cf19 
 
 RUN . /spack/share/spack/setup-env.sh \     
     && spack env create -d . \
     && spack env activate -d . \
     && spack compiler find \
-    && spack install --no-checksum --deprecated netcdf-c@4.7.3 \
-    && spack install --no-checksum --deprecated netcdf-fortran@4.8.0 \
-    && spack install --no-checksum --deprecated cmake@3.20 \ 
+    && spack install --no-checksum --deprecated cmake@3.16.0 \
+    && spack install --no-checksum --deprecated netcdf-fortran@4.5.3 \
     && spack install --no-checksum --deprecated jpeg@9.1.0 \ 
     && spack install --no-checksum --deprecated bacio@2.4.1 \ 
     && spack install --no-checksum --deprecated sigio@2.3.2 \
@@ -51,6 +50,8 @@ RUN . /spack/share/spack/setup-env.sh \
     && spack install --no-checksum --deprecated libxml2@2.9.8 \ 
     && spack install --no-checksum --deprecated binutils@2.34 \
     && spack install --no-checksum --deprecated bzip2@1.06 \
+    && spack install --no-checksum --deprecated netcdf-c@4.7.3 \
+    && spack install --no-checksum --deprecated trilinos@13.0.1 \
     && spack mirror add e4s https://cache.e4s.io \
     && spack buildcache keys -it
     # Search for system-provided packages and add to packages.yaml
