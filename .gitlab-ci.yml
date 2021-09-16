@@ -1,0 +1,23 @@
+stages:
+  - build
+  - test
+
+build:
+  tags:
+    - docker
+  image: docker:19.03.13
+  stage: build
+  services:
+    - docker:19.03.13-dind
+
+  script:
+    - echo "Yargh"
+    - env
+    - docker info
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker build -t $IMAGE .
+    - docker push $IMAGE
+
+variables:
+  IMAGE: gitlab.gfdl.noaa.gov:5050/sw/spack:latest
+  DOCKER_IMAGE: gitlab.gfdl.noaa.gov:5050/sw/spack:latest
