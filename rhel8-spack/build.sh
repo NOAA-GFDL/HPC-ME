@@ -7,7 +7,7 @@ BUILD_REPO_REF=$(git log -1 --format="%H")
 
 # set $REGISTRY to the Docker username/registry to use, otherwise will default to $USER
 REGISTRY=${REGISTRY:-$USER}
-OUTPUT_IMAGE="${REGISTRY}/rhel8-spack-x86_64:${BUILD_TAG}-gcc11.2"
+OUTPUT_IMAGE="${REGISTRY}/rhel8-spack-x86_64:${BUILD_TAG}-gcc11.2-v7"
 
 SPACK_REPO=https://github.com/spack/spack.git
 # Set the spack version here
@@ -17,14 +17,9 @@ SPACK_REPO=https://github.com/spack/spack.git
 
 SPACK_REPO_REF=develop
 
-#E4S_BASE_IMAGE=rhel8-runner-x86_64:2021-09-01-gcc11.2
+E4S_BASE_IMAGE=rhel8-runner-x86_64:2021-09-01-gcc11.2
 
 
-E4S_BASE_IMAGE=rhel8-runner-x86_64:lscmdb02-d/data/docker-dev/docker-php
-
-docker login gitlab.gfdl.noaa.gov \
-  -u $CI_REGISTRY_USER \
-  -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
 
 docker build \
   --build-arg E4S_BASE_IMAGE="${E4S_BASE_IMAGE}" \
@@ -33,4 +28,4 @@ docker build \
   --build-arg BUILD_REPO_REF="${BUILD_REPO_REF}" \
   --build-arg SPACK_REPO="${SPACK_REPO}" \
   --build-arg SPACK_REPO_REF="${SPACK_REPO_REF}" \
-  -t "${OUTPUT_IMAGE}" .
+  -t "${OUTPUT_IMAGE}" -f Dockerfile .
