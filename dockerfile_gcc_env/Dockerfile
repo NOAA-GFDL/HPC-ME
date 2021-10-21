@@ -1,10 +1,10 @@
 # Build stage with Spack pre-installed and ready to be used
-FROM ecpe4s/rhel8-runner-x86_64:2021-09-01-gcc11.2
+FROM ecpe4s/rhel8-runner-x86_64:2021-09-01-gcc11.2 as builder
 
 # What we want to install and how we want to install it
 # is specified in a manifest file (spack.yaml)
 RUN mkdir /opt/spack-environment \
-&&  (echo "spack:" \
+&& (echo "spack:" \
 &&   echo "  specs:" \
 &&   echo "  - antlr@2.7.7" \
 &&   echo "  - automake@1.16.3" \
@@ -99,7 +99,7 @@ RUN git clone https://github.com/spack/spack.git \
 # Install the software, remove unnecessary deps
 RUN cd /opt/spack-environment && \
     . /spack/share/spack/setup-env.sh && \ 
-    spack env activate . && \
+    spack env activate . 
     spack install --fail-fast && \
     spack gc -y
 
@@ -112,6 +112,7 @@ RUN find -L /opt/view/* -type f -exec readlink -f '{}' \; | \
 
 # Modifications to the environment that are necessary to run
 RUN cd /opt/spack-environment && \
+    . /spack/share/spack/setup-env.sh && \
     spack env activate --sh -d . >> /etc/profile.d/z10_spack_environment.sh
 
 
