@@ -72,7 +72,7 @@ RUN mkdir /opt/spack-environment \
 &&   echo "  view: /opt/view" \
 &&   echo "  compilers:" \
 &&   echo "  - compiler:" \
-&&   echo "      spec: gcc@8.4.1" \
+&&   echo "      spec: gcc@8.3.1" \
 &&   echo "      paths:" \
 &&   echo "        cc: /usr/bin/gcc" \
 &&   echo "        cxx: /usr/bin/g++" \
@@ -99,7 +99,7 @@ RUN git clone https://github.com/spack/spack.git \
 # Install the software, remove unnecessary deps
 RUN cd /opt/spack-environment && \
     . /spack/share/spack/setup-env.sh && \ 
-    spack env activate . 
+    spack env activate . && \ 
     spack install --fail-fast && \
     spack gc -y
 
@@ -117,7 +117,7 @@ RUN cd /opt/spack-environment && \
 
 
 # Bare OS image to run the installed executables
-FROM ubuntu:18.04
+FROM ecpe4s/rhel8-runner-x86_64:2021-09-01-gcc11.2
 
 COPY --from=builder /opt/spack-environment /opt/spack-environment
 COPY --from=builder /opt/software /opt/software
