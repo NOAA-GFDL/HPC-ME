@@ -1,0 +1,142 @@
+Sending build context to Docker daemon  11.78kB
+Step 1/13 : FROM intel/oneapi-hpckit as builder
+ ---> 912f9956640f
+Step 2/13 : RUN mkdir /opt/spack-environment &&  (echo "spack:" &&   echo "  specs:" &&   echo "  - automake@1.16.3 %intel@2021.4.0" &&   echo "  - bacio@2.4.1 %intel@2021.4.0" &&   echo "  - berkeley-db@18.1.40%intel@2021.4.0 " &&   echo "  - bison@3.7.6 %intel@2021.4.0" &&   echo "  - bzip2@1.0.8 %intel@2021.4.0" &&   echo "  - cmake@3.21.2 %intel@2021.4.0" &&   echo "  - crtm@2.3.0 %intel@2021.4.0" &&   echo "  - curl@7.78.0 %intel@2021.4.0" &&   echo "  - diffutils@3.7 %intel@2021.4.0" &&   echo "  - esmf@8.1.1 ^intel-mpi@2019.10.317 %intel@2021.4.0" &&   echo "  - expat@2.4.1 %intel@2021.4.0" &&   echo "  - g2@3.4.3 %intel@2021.4.0" &&   echo "  - g2tmpl@1.10.0 %intel@2021.4.0" &&   echo "  - gdbm@1.19 %intel@2021.4.0" &&   echo "  - gsl@2.7 %intel@2021.4.0" &&   echo "  - hdf5@1.10.7 ^intel-mpi@2019.10.317 %intel@2021.4.0" &&   echo "  - intel-mpi@2019.10.317 %intel@2021.4.0" &&   echo "  - ip@3.3.3 %intel@2021.4.0" &&   echo "  - ip2@1.1.2 %intel@2021.4.0" &&   echo "  - jasper@2.0.32 %intel@2021.4.0" &&   echo "  - libbsd@0.11.3 %intel@2021.4.0" &&   echo "  - libiconv@1.16 %intel@2021.4.0" &&   echo "  - libjpeg-turbo@2.1.0 %intel@2021.4.0" &&   echo "  - libmd@1.0.3 %intel@2021.4.0" &&   echo "  - libpng@1.6.37 %intel@2021.4.0" &&   echo "  - libsigsegv@2.13 %intel@2021.4.0" &&   echo "  - libxml2@2.9.12 %intel@2021.4.0" &&   echo "  - libyaml@0.2.5 %intel@2021.4.0" &&   echo "  - m4@1.4.19 %intel@2021.4.0" &&   echo "  - nasm@2.15.05 %intel@2021.4.0" &&   echo "  - ncurses@6.2 %intel@2021.4.0" &&   echo "  - nemsio@2.5.2 ^intel-mpi@2019.10.317 %intel@2021.4.0" &&   echo "  - netcdf-c@4.8.0 ^hdf5+fortran+hl ^intel-mpi@2019.10.317 %intel@2021.4.0" &&   echo "  - netcdf-fortran@4.5.3 ^netcdf-c ^intel-mpi@2019.10.317 %intel@2021.4.0" &&   echo "  - numactl@2.0.14 %intel@2021.4.0" &&   echo "  - openssl@1.1.1l %intel@2021.4.0" &&   echo "  - parallel-netcdf@1.12.2 ^intel-mpi@2019.10.317 %intel@2021.4.0" &&   echo "  - perl@5.34.0 %intel@2021.4.0" &&   echo "  - pkgconf@1.8.0 %intel@2021.4.0" &&   echo "  - readline@8.1 %intel@2021.4.0" &&   echo "  - sfcio@1.4.1 %intel@2021.4.0" &&   echo "  - sigio@2.3.2 %intel@2021.4.0" &&   echo "  - sp@2.3.3 %intel@2021.4.0" &&   echo "  - udunits@2.2.28 %intel@2021.4.0" &&   echo "  - w3emc@2.9.0 %intel@2021.4.0" &&   echo "  - w3nco@2.4.1 %intel@2021.4.0" &&   echo "  - wrf-io@1.2.0 %intel@2021.4.0" &&   echo "  - xerces-c@3.2.3 %intel@2021.4.0" &&   echo "  - xz@5.2.5 %intel@2021.4.0" &&   echo "  - zlib@1.2.11 %intel@2021.4.0" &&   echo "  view: /opt/view" &&   echo "  mirrors:" &&   echo "    e4s: https://cache.e4s.io" &&   echo "  concretization: together" &&   echo "  config:" &&   echo "    install_tree: /opt/intel") > /opt/spack-environment/spack.yaml
+ ---> Using cache
+ ---> e0c35b23060a
+Step 3/13 : RUN apt-get update -y
+ ---> Using cache
+ ---> 04a7aa225993
+Step 4/13 : RUN apt-get install -y git
+ ---> Using cache
+ ---> 0eb6327d6809
+Step 5/13 : RUN git clone https://github.com/spack/spack.git     && cd spack     && git checkout c24413a530ee4cddc630d79aa67fada7d82a86e5
+ ---> Using cache
+ ---> 1155a8571fd0
+Step 6/13 : RUN . /opt/intel/oneapi/setvars.sh &&     cd /opt/spack-environment &&     . /spack/share/spack/setup-env.sh &&     spack compiler find &&     spack env activate . &&     apt-get update &&     apt-get install -y cpio &&     spack install --fail-fast --dirty &&     spack gc -y
+ ---> Using cache
+ ---> d9a4befcb44e
+Step 7/13 : RUN . /opt/intel/oneapi/setvars.sh &&     . /spack/share/spack/setup-env.sh &&     cd /opt/spack-environment &&     spack env activate --sh -d . >> /etc/profile.d/z10_spack_environment.sh
+ ---> Using cache
+ ---> 85c8ca4245ae
+Step 8/13 : FROM intel/oneapi-hpckit
+ ---> 912f9956640f
+Step 9/13 : COPY --from=builder /opt /opt
+ ---> 96eb2b147acb
+Step 10/13 : COPY --from=builder /etc/profile.d/z10_spack_environment.sh /etc/profile.d/z10_spack_environment.sh
+ ---> b4a8da5f721c
+Step 11/13 : RUN apt-get update
+ ---> Running in 70bcd8f988be
+Get:1 http://security.ubuntu.com/ubuntu bionic-security InRelease [88.7 kB]
+Get:2 https://apt.repos.intel.com/oneapi all InRelease [4398 B]
+Get:3 http://archive.ubuntu.com/ubuntu bionic InRelease [242 kB]
+Get:4 http://archive.ubuntu.com/ubuntu bionic-updates InRelease [88.7 kB]
+Get:5 http://security.ubuntu.com/ubuntu bionic-security/restricted amd64 Packages [632 kB]
+Get:6 http://security.ubuntu.com/ubuntu bionic-security/universe amd64 Packages [1434 kB]
+Get:7 http://archive.ubuntu.com/ubuntu bionic-backports InRelease [74.6 kB]
+Get:8 http://security.ubuntu.com/ubuntu bionic-security/main amd64 Packages [2398 kB]
+Get:9 http://security.ubuntu.com/ubuntu bionic-security/multiverse amd64 Packages [26.7 kB]
+Get:10 https://apt.repos.intel.com/oneapi all/main amd64 Packages [123 kB]
+Get:11 https://apt.repos.intel.com/oneapi all/main all Packages [21.1 kB]
+Get:12 https://repositories.intel.com/graphics/ubuntu bionic InRelease [3200 B]
+Get:13 http://archive.ubuntu.com/ubuntu bionic/universe amd64 Packages [11.3 MB]
+Get:14 https://repositories.intel.com/graphics/ubuntu bionic/main amd64 Packages [39.0 kB]
+Get:15 http://archive.ubuntu.com/ubuntu bionic/main amd64 Packages [1344 kB]
+Get:16 http://archive.ubuntu.com/ubuntu bionic/multiverse amd64 Packages [186 kB]
+Get:17 http://archive.ubuntu.com/ubuntu bionic/restricted amd64 Packages [13.5 kB]
+Get:18 http://archive.ubuntu.com/ubuntu bionic-updates/restricted amd64 Packages [665 kB]
+Get:19 http://archive.ubuntu.com/ubuntu bionic-updates/multiverse amd64 Packages [34.4 kB]
+Get:20 http://archive.ubuntu.com/ubuntu bionic-updates/universe amd64 Packages [2213 kB]
+Get:21 http://archive.ubuntu.com/ubuntu bionic-updates/main amd64 Packages [2835 kB]
+Get:22 http://archive.ubuntu.com/ubuntu bionic-backports/universe amd64 Packages [11.4 kB]
+Get:23 http://archive.ubuntu.com/ubuntu bionic-backports/main amd64 Packages [11.3 kB]
+Fetched 23.8 MB in 9s (2623 kB/s)
+Reading package lists...
+Removing intermediate container 70bcd8f988be
+ ---> ed597a56deb2
+Step 12/13 : RUN apt-get install -y git
+ ---> Running in 80d6b4384948
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following additional packages will be installed:
+  git-man less libcurl3-gnutls libedit2 liberror-perl libssl1.0.0 libxmuu1
+  openssh-client xauth
+Suggested packages:
+  gettext-base git-daemon-run | git-daemon-sysvinit git-doc git-el git-email
+  git-gui gitk gitweb git-cvs git-mediawiki git-svn keychain libpam-ssh
+  monkeysphere ssh-askpass
+The following NEW packages will be installed:
+  git git-man less libcurl3-gnutls libedit2 liberror-perl libssl1.0.0 libxmuu1
+  openssh-client xauth
+0 upgraded, 10 newly installed, 0 to remove and 15 not upgraded.
+Need to get 6891 kB of archives.
+After this operation, 42.9 MB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu bionic/main amd64 less amd64 487-0.1 [112 kB]
+Get:2 http://archive.ubuntu.com/ubuntu bionic/main amd64 libedit2 amd64 3.1-20170329-1 [76.9 kB]
+Get:3 http://archive.ubuntu.com/ubuntu bionic-updates/main amd64 libssl1.0.0 amd64 1.0.2n-1ubuntu5.7 [1089 kB]
+Get:4 http://archive.ubuntu.com/ubuntu bionic/main amd64 libxmuu1 amd64 2:1.1.2-2 [9674 B]
+Get:5 http://archive.ubuntu.com/ubuntu bionic-updates/main amd64 openssh-client amd64 1:7.6p1-4ubuntu0.5 [612 kB]
+Get:6 http://archive.ubuntu.com/ubuntu bionic/main amd64 xauth amd64 1:1.0.10-1 [24.6 kB]
+Get:7 http://archive.ubuntu.com/ubuntu bionic-updates/main amd64 libcurl3-gnutls amd64 7.58.0-2ubuntu3.16 [218 kB]
+Get:8 http://archive.ubuntu.com/ubuntu bionic/main amd64 liberror-perl all 0.17025-1 [22.8 kB]
+Get:9 http://archive.ubuntu.com/ubuntu bionic-updates/main amd64 git-man all 1:2.17.1-1ubuntu0.9 [803 kB]
+Get:10 http://archive.ubuntu.com/ubuntu bionic-updates/main amd64 git amd64 1:2.17.1-1ubuntu0.9 [3923 kB]
+[91mdebconf: delaying package configuration, since apt-utils is not installed
+[0mFetched 6891 kB in 0s (32.6 MB/s)
+Selecting previously unselected package less.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 55990 files and directories currently installed.)
+Preparing to unpack .../0-less_487-0.1_amd64.deb ...
+Unpacking less (487-0.1) ...
+Selecting previously unselected package libedit2:amd64.
+Preparing to unpack .../1-libedit2_3.1-20170329-1_amd64.deb ...
+Unpacking libedit2:amd64 (3.1-20170329-1) ...
+Selecting previously unselected package libssl1.0.0:amd64.
+Preparing to unpack .../2-libssl1.0.0_1.0.2n-1ubuntu5.7_amd64.deb ...
+Unpacking libssl1.0.0:amd64 (1.0.2n-1ubuntu5.7) ...
+Selecting previously unselected package libxmuu1:amd64.
+Preparing to unpack .../3-libxmuu1_2%3a1.1.2-2_amd64.deb ...
+Unpacking libxmuu1:amd64 (2:1.1.2-2) ...
+Selecting previously unselected package openssh-client.
+Preparing to unpack .../4-openssh-client_1%3a7.6p1-4ubuntu0.5_amd64.deb ...
+Unpacking openssh-client (1:7.6p1-4ubuntu0.5) ...
+Selecting previously unselected package xauth.
+Preparing to unpack .../5-xauth_1%3a1.0.10-1_amd64.deb ...
+Unpacking xauth (1:1.0.10-1) ...
+Selecting previously unselected package libcurl3-gnutls:amd64.
+Preparing to unpack .../6-libcurl3-gnutls_7.58.0-2ubuntu3.16_amd64.deb ...
+Unpacking libcurl3-gnutls:amd64 (7.58.0-2ubuntu3.16) ...
+Selecting previously unselected package liberror-perl.
+Preparing to unpack .../7-liberror-perl_0.17025-1_all.deb ...
+Unpacking liberror-perl (0.17025-1) ...
+Selecting previously unselected package git-man.
+Preparing to unpack .../8-git-man_1%3a2.17.1-1ubuntu0.9_all.deb ...
+Unpacking git-man (1:2.17.1-1ubuntu0.9) ...
+Selecting previously unselected package git.
+Preparing to unpack .../9-git_1%3a2.17.1-1ubuntu0.9_amd64.deb ...
+Unpacking git (1:2.17.1-1ubuntu0.9) ...
+Setting up libedit2:amd64 (3.1-20170329-1) ...
+Setting up git-man (1:2.17.1-1ubuntu0.9) ...
+Setting up less (487-0.1) ...
+debconf: unable to initialize frontend: Dialog
+debconf: (TERM is not set, so the dialog frontend is not usable.)
+debconf: falling back to frontend: Readline
+Setting up libssl1.0.0:amd64 (1.0.2n-1ubuntu5.7) ...
+debconf: unable to initialize frontend: Dialog
+debconf: (TERM is not set, so the dialog frontend is not usable.)
+debconf: falling back to frontend: Readline
+Setting up liberror-perl (0.17025-1) ...
+Setting up libcurl3-gnutls:amd64 (7.58.0-2ubuntu3.16) ...
+Setting up libxmuu1:amd64 (2:1.1.2-2) ...
+Setting up xauth (1:1.0.10-1) ...
+Setting up openssh-client (1:7.6p1-4ubuntu0.5) ...
+Setting up git (1:2.17.1-1ubuntu0.9) ...
+Processing triggers for libc-bin (2.27-3ubuntu1.4) ...
+Removing intermediate container 80d6b4384948
+ ---> c43ebd54fb9c
+Step 13/13 : ENTRYPOINT ["/bin/bash", "--rcfile", "/etc/profile", "-l"]
+ ---> Running in 5fd22b6764f4
+Removing intermediate container 5fd22b6764f4
+ ---> 62446f4f61dd
+Successfully built 62446f4f61dd
+Successfully tagged environment_container:intel2021.4
