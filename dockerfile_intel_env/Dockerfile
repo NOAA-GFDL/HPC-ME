@@ -90,10 +90,8 @@ RUN mkdir /opt/spack-environment \
 &&   echo "  config:" \
 &&   echo "    install_tree: /opt/intel") > /opt/spack-environment/spack.yaml
 
-RUN apt-get update 
+RUN apt-get update -y
 RUN apt-get install -y git
-
-RUN . /opt/intel/oneapi/setvars.sh
 
 # Setup spack
 # these instructions are from one of the current non-runner ecpe4s dockerhub images
@@ -102,7 +100,8 @@ RUN git clone https://github.com/spack/spack.git \
     && git checkout c24413a530ee4cddc630d79aa67fada7d82a86e5 
 
 # Install the software, remove unnecessary deps --fail-fast
-RUN cd /opt/spack-environment && \
+RUN . /opt/intel/oneapi/setvars.sh && \
+    cd /opt/spack-environment && \
     . /spack/share/spack/setup-env.sh && \
     spack env activate . && \
     apt-get update && \
@@ -118,7 +117,8 @@ RUN find -L /opt/view/* -type f -exec readlink -f '{}' \; | \
     awk -F: '{print $1}' | xargs strip -s
 
 # Modifications to the environment that are necessary to run
-RUN cd /opt/spack-environment && \
+RUN . /opt/intel/oneapi/setvars.sh && \
+    cd /opt/spack-environment && \
     spack env activate --sh -d . >> /etc/profile.d/z10_spack_environment.sh
 
 
