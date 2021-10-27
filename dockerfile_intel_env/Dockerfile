@@ -57,33 +57,33 @@ RUN mkdir /opt/spack-environment \
 &&   echo "  - xz@5.2.5 %intel@2021.4.0" \
 &&   echo "  - zlib@1.2.11 %intel@2021.4.0" \
 &&   echo "  view: /opt/view" \
-&&   echo "  compilers:" \
-&&   echo "  - compiler:" \
-&&   echo "      spec: intel@2021.4.0" \
-&&   echo "      paths:" \
-&&   echo "        cc: /opt/intel/oneapi/mpi/2021.4.0/bin/mpiicc" \
-&&   echo "        cxx: /opt/intel/oneapi/mpi/2021.4.0/bin/mpiicpc" \
-&&   echo "        f77: /opt/intel/oneapi/mpi/2021.4.0/bin/mpiifort" \
-&&   echo "        fc: /opt/intel/oneapi/mpi/2021.4.0/bin/mpiifort" \
-&&   echo "      flags: {}" \
-&&   echo "      operating_system: ubuntu18.04" \
-&&   echo "      target: x86_64" \
-&&   echo "      modules: []" \
-&&   echo "      environment: {}" \
-&&   echo "      extra_rpaths: []" \
-&&   echo "  - compiler:" \
-&&   echo "      spec: oneapi@2021.4.0" \
-&&   echo "      paths:" \
-&&   echo "        cc: /opt/intel/oneapi/compiler/2021.4.0/linux/bin/icx" \
-&&   echo "        cxx: /opt/intel/oneapi/compiler/2021.4.0/linux/bin/icpx" \
-&&   echo "        f77: /opt/intel/oneapi/compiler/2021.4.0/linux/bin/ifx" \
-&&   echo "        fc: /opt/intel/oneapi/compiler/2021.4.0/linux/bin/ifx" \
-&&   echo "      flags: {}" \
-&&   echo "      operating_system: ubuntu18.04" \
-&&   echo "      target: x86_64" \
-&&   echo "      modules: []" \
-&&   echo "      environment: {}" \
-&&   echo "      extra_rpaths: []" \
+#&&   echo "  compilers:" \
+#&&   echo "  - compiler:" \
+#&&   echo "      spec: intel@2021.4.0" \
+#&&   echo "      paths:" \
+#&&   echo "        cc: /opt/intel/oneapi/mpi/2021.4.0/bin/mpiicc" \
+#&&   echo "        cxx: /opt/intel/oneapi/mpi/2021.4.0/bin/mpiicpc" \
+#&&   echo "        f77: /opt/intel/oneapi/mpi/2021.4.0/bin/mpiifort" \
+#&&   echo "        fc: /opt/intel/oneapi/mpi/2021.4.0/bin/mpiifort" \
+#&&   echo "      flags: {}" \
+#&&   echo "      operating_system: ubuntu18.04" \
+#&&   echo "      target: x86_64" \
+#&&   echo "      modules: []" \
+#&&   echo "      environment: {}" \
+#&&   echo "      extra_rpaths: []" \
+#&&   echo "  - compiler:" \
+#&&   echo "      spec: oneapi@2021.4.0" \
+#&&   echo "      paths:" \
+#&&   echo "        cc: /opt/intel/oneapi/compiler/2021.4.0/linux/bin/icx" \
+#&&   echo "        cxx: /opt/intel/oneapi/compiler/2021.4.0/linux/bin/icpx" \
+#&&   echo "        f77: /opt/intel/oneapi/compiler/2021.4.0/linux/bin/ifx" \
+#&&   echo "        fc: /opt/intel/oneapi/compiler/2021.4.0/linux/bin/ifx" \
+#&&   echo "      flags: {}" \
+#&&   echo "      operating_system: ubuntu18.04" \
+#&&   echo "      target: x86_64" \
+#&&   echo "      modules: []" \
+#&&   echo "      environment: {}" \
+#&&   echo "      extra_rpaths: []" \
 &&   echo "  mirrors:" \
 &&   echo "    e4s: https://cache.e4s.io" \
 &&   echo "  concretization: together" \
@@ -103,6 +103,7 @@ RUN git clone https://github.com/spack/spack.git \
 RUN . /opt/intel/oneapi/setvars.sh && \
     cd /opt/spack-environment && \
     . /spack/share/spack/setup-env.sh && \
+    spack compiler find && \
     spack env activate . && \
     apt-get update && \
     apt-get install -y cpio && \ 
