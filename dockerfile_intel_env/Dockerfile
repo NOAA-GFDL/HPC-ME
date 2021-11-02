@@ -1,5 +1,5 @@
 # Build stage with Spack pre-installed and ready to be used
-FROM intel/oneapi-hpckit as builder
+FROM intel/oneapi-hpckit:2021.4-devel-ubuntu18.04 as builder
 
 # What we want to install and how we want to install it
 # is specified in a manifest file (spack.yaml)
@@ -57,33 +57,6 @@ RUN mkdir /opt/spack-environment \
 &&   echo "  - xz@5.2.5 %intel@2021.4.0" \
 &&   echo "  - zlib@1.2.11 %intel@2021.4.0" \
 &&   echo "  view: /opt/view" \
-#&&   echo "  compilers:" \
-#&&   echo "  - compiler:" \
-#&&   echo "      spec: intel@2021.4.0" \
-#&&   echo "      paths:" \
-#&&   echo "        cc: /opt/intel/oneapi/mpi/2021.4.0/bin/mpiicc" \
-#&&   echo "        cxx: /opt/intel/oneapi/mpi/2021.4.0/bin/mpiicpc" \
-#&&   echo "        f77: /opt/intel/oneapi/mpi/2021.4.0/bin/mpiifort" \
-#&&   echo "        fc: /opt/intel/oneapi/mpi/2021.4.0/bin/mpiifort" \
-#&&   echo "      flags: {}" \
-#&&   echo "      operating_system: ubuntu18.04" \
-#&&   echo "      target: x86_64" \
-#&&   echo "      modules: []" \
-#&&   echo "      environment: {}" \
-#&&   echo "      extra_rpaths: []" \
-#&&   echo "  - compiler:" \
-#&&   echo "      spec: oneapi@2021.4.0" \
-#&&   echo "      paths:" \
-#&&   echo "        cc: /opt/intel/oneapi/compiler/2021.4.0/linux/bin/icx" \
-#&&   echo "        cxx: /opt/intel/oneapi/compiler/2021.4.0/linux/bin/icpx" \
-#&&   echo "        f77: /opt/intel/oneapi/compiler/2021.4.0/linux/bin/ifx" \
-#&&   echo "        fc: /opt/intel/oneapi/compiler/2021.4.0/linux/bin/ifx" \
-#&&   echo "      flags: {}" \
-#&&   echo "      operating_system: ubuntu18.04" \
-#&&   echo "      target: x86_64" \
-#&&   echo "      modules: []" \
-#&&   echo "      environment: {}" \
-#&&   echo "      extra_rpaths: []" \
 &&   echo "  mirrors:" \
 &&   echo "    e4s: https://cache.e4s.io" \
 &&   echo "  concretization: together" \
@@ -110,13 +83,6 @@ RUN . /opt/intel/oneapi/setvars.sh && \
     spack install --fail-fast --dirty && \
     spack gc -y 
 
-# Strip all the binaries
-#RUN find -L /opt/view/* -type f -exec readlink -f '{}' \; | \
-#    xargs file -i | \
-#    grep 'charset=binary' | \
-#    grep 'x-executable\|x-archive\|x-sharedlib' | \
-#    awk -F: '{print $1}' | xargs strip -s
-
 # Modifications to the environment that are necessary to run
 RUN . /opt/intel/oneapi/setvars.sh && \
     . /spack/share/spack/setup-env.sh && \
@@ -124,10 +90,8 @@ RUN . /opt/intel/oneapi/setvars.sh && \
     spack env activate --sh -d . >> /etc/profile.d/z10_spack_environment.sh
 
 # Bare OS image to run the installed executables
-FROM intel/oneapi-hpckit 
+FROM intel/oneapi-hpckit:2021.4-devel-ubuntu18.04 
 
-#COPY --from=builder /opt/spack-environment /opt/spack-environment
-#COPY --from=builder /opt/software /opt/software
 COPY --from=builder /opt /opt
 COPY --from=builder /etc/profile.d/z10_spack_environment.sh /etc/profile.d/z10_spack_environment.sh
 
