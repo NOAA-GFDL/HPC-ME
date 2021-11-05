@@ -15,7 +15,7 @@ variables:
 stages:
   - build
 
-build-gcc-image:
+build-gcc:
   stage: build
   tags:
     - docker
@@ -26,6 +26,25 @@ build-gcc-image:
     - OUTPUT_IMAGE=$CI_REGISTRY_IMAGE/rhel8-gcc:$(date +%Y-%m-%d)
   script:
     - cd dockerfile_gcc_env
+    - docker build
+        --build-arg BUILD_DATE=$CI_COMMIT_TIMESTAMP
+        --build-arg BUILD_REPO=$DOCKER_ENV_CI_PROJECT_URL
+        --build-arg BUILD_REPO_REF=$CI_COMMIT_SHA
+        --build-arg BUILDKIT_INLINE_CACHE=1
+        --tag "${OUTPUT_IMAGE}" .
+    - docker push "${OUTPUT_IMAGE}"
+
+build-intel:
+  stage: build
+  tags:
+    - docker
+  variables:
+  before_script:
+    - env
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - OUTPUT_IMAGE=$CI_REGISTRY_IMAGE/rhel8-intel:$(date +%Y-%m-%d)
+  script:
+    - cd dockerfile_intel_env
     - docker build
         --build-arg BUILD_DATE=$CI_COMMIT_TIMESTAMP
         --build-arg BUILD_REPO=$DOCKER_ENV_CI_PROJECT_URL
