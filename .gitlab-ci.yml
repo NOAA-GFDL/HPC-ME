@@ -12,8 +12,7 @@ variables:
   CS_SEVERITY_THRESHOLD: MEDIUM
   CS_ANALYZER_IMAGE: registry.gitlab.com/security-products/container-scanning:4
 
-  BUILD_DATE: "2021-11-04"
-  BUILD_TAG: ${BUILD_DATE}
+  BUILD_TAG: "2021-11-04"
   BUILD_REPO: git@gitlab.gfdl.noaa.gov:luis.sal-bey/environment_containers.git
   BUILD_REPO_REF: 3114a394da0816599657bc1b3b18477509ee4d49
 
@@ -28,6 +27,7 @@ docker-build:
   tags:
     - docker
   before_script:
+    - env
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
   script:
     - docker build
