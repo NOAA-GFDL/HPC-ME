@@ -23,16 +23,25 @@ build-gcc:
   before_script:
     - env
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
-    - OUTPUT_IMAGE=$CI_REGISTRY_IMAGE/rhel8-gcc:$(date +%Y-%m-%d)
+    - RUN_IMAGE=$CI_REGISTRY_IMAGE/rhel8-gcc:$(date +%Y-%m-%d)
+    - BUILD_IMAGE=$CI_REGISTRY_IMAGE/rhel8-gcc-build:$(date +%Y-%m-%d)
   script:
     - cd dockerfile_gcc_env
+    - docker build
+        --target builder
+        --build-arg BUILD_DATE=$CI_COMMIT_TIMESTAMP
+        --build-arg BUILD_REPO=$DOCKER_ENV_CI_PROJECT_URL
+        --build-arg BUILD_REPO_REF=$CI_COMMIT_SHA
+        --build-arg BUILDKIT_INLINE_CACHE=1
+        --tag "${BUILD_IMAGE}" .
+    - docker push "${BUILD_IMAGE}"
     - docker build
         --build-arg BUILD_DATE=$CI_COMMIT_TIMESTAMP
         --build-arg BUILD_REPO=$DOCKER_ENV_CI_PROJECT_URL
         --build-arg BUILD_REPO_REF=$CI_COMMIT_SHA
         --build-arg BUILDKIT_INLINE_CACHE=1
-        --tag "${OUTPUT_IMAGE}" .
-    - docker push "${OUTPUT_IMAGE}"
+        --tag "${RUN_IMAGE}" .
+    - docker push "${RUN_IMAGE}"
 
 build-intel:
   stage: build
@@ -42,13 +51,22 @@ build-intel:
   before_script:
     - env
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
-    - OUTPUT_IMAGE=$CI_REGISTRY_IMAGE/rhel8-intel:$(date +%Y-%m-%d)
+    - RUN_IMAGE=$CI_REGISTRY_IMAGE/rhel8-intel:$(date +%Y-%m-%d)
+    - BUILD_IMAGE=$CI_REGISTRY_IMAGE/rhel8-intel-build:$(date +%Y-%m-%d)
   script:
     - cd dockerfile_intel_env
+    - docker build
+        --target builder
+        --build-arg BUILD_DATE=$CI_COMMIT_TIMESTAMP
+        --build-arg BUILD_REPO=$DOCKER_ENV_CI_PROJECT_URL
+        --build-arg BUILD_REPO_REF=$CI_COMMIT_SHA
+        --build-arg BUILDKIT_INLINE_CACHE=1
+        --tag "${BUILD_IMAGE}" .
+    - docker push "${BUILD_IMAGE}"
     - docker build
         --build-arg BUILD_DATE=$CI_COMMIT_TIMESTAMP
         --build-arg BUILD_REPO=$DOCKER_ENV_CI_PROJECT_URL
         --build-arg BUILD_REPO_REF=$CI_COMMIT_SHA
         --build-arg BUILDKIT_INLINE_CACHE=1
-        --tag "${OUTPUT_IMAGE}" .
-    - docker push "${OUTPUT_IMAGE}"
+        --tag "${RUN_IMAGE}" .
+    - docker push "${RUN_IMAGE}"
