@@ -1,23 +1,54 @@
-stages:
-  - build
-  - test
+image: docker:stable
 
-build:
-  tags:
-    - docker
-  image: docker:19.03.13
-  stage: build
-  services:
-    - docker:19.03.13-dind
-
-  script:
-    - echo "Yargh"
-    - env
-    - docker info
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
-    - docker build -t $IMAGE .
-    - docker push $IMAGE
+services:
+  - docker:dind
 
 variables:
-  IMAGE: gitlab.gfdl.noaa.gov:5050/sw/spack:latest
-  DOCKER_IMAGE: gitlab.gfdl.noaa.gov:5050/sw/spack:latest
+  DOCKER_DRIVER: overlay2
+  DOCKER_HOST: tcp://docker:2375
+  DOCKER_TLS_CERTDIR: ""
+  DOCKER_BUILDKIT: 1
+  SECURE_LOG_LEVEL: debug
+  CS_SEVERITY_THRESHOLD: MEDIUM
+  CS_ANALYZER_IMAGE: registry.gitlab.com/security-products/container-scanning:4
+
+stages:
+  - build
+
+build-gcc:
+  stage: build
+  tags:
+    - docker
+  variables:
+  before_script:
+    - env
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - OUTPUT_IMAGE=$CI_REGISTRY_IMAGE/rhel8-gcc:$(date +%Y-%m-%d)
+  script:
+    - cd dockerfile_gcc_env
+    - docker build
+        --build-arg BUILD_DATE=$CI_COMMIT_TIMESTAMP
+        --build-arg BUILD_REPO=$DOCKER_ENV_CI_PROJECT_URL
+        --build-arg BUILD_REPO_REF=$CI_COMMIT_SHA
+        --build-arg BUILDKIT_INLINE_CACHE=1
+        --tag "${OUTPUT_IMAGE}" .
+    - docker push "${OUTPUT_IMAGE}"
+
+build-intel:
+  stage: build
+  tags:
+    - docker
+  variables:
+  before_script:
+    - env
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - OUTPUT_IMAGE=$CI_REGISTRY_IMAGE/rhel8-intel:$(date +%Y-%m-%d)
+  script:
+    - cd dockerfile_intel_env
+    - docker build
+        --build-arg BUILD_DATE=$CI_COMMIT_TIMESTAMP
+        --build-arg BUILD_REPO=$DOCKER_ENV_CI_PROJECT_URL
+        --build-arg BUILD_REPO_REF=$CI_COMMIT_SHA
+        --build-arg BUILDKIT_INLINE_CACHE=1
+        --tag "${OUTPUT_IMAGE}" .
+    - docker push "${OUTPUT_IMAGE}"
