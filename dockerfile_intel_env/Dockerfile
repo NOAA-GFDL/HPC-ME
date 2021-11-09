@@ -56,6 +56,7 @@ RUN mkdir /opt/spack-environment \
 &&   echo "  - xerces-c@3.2.3 %intel@2021.4.0" \
 &&   echo "  - xz@5.2.5 %intel@2021.4.0" \
 &&   echo "  - zlib@1.2.11 %intel@2021.4.0" \
+&&   echo "  - lmod@8.5.6 %intel@2021.4.0" \
 &&   echo "  view: /opt/view" \
 &&   echo "  mirrors:" \
 &&   echo "    e4s: https://cache.e4s.io" \
@@ -83,21 +84,30 @@ RUN . /opt/intel/oneapi/setvars.sh && \
     spack install --fail-fast --dirty && \
     spack gc -y 
 
+# Modifications to the environment that are necessary to run
+RUN . /etc/skel/.bashrc && \ 
+    cd /opt/spack-environment && \
+    . /opt/intel/oneapi/setvars.sh && \
+    cd /opt/spack-environment && \
+    . /spack/share/spack/setup-env.sh && \ 
+    spack env activate --sh -d . >> /etc/profile.d/z10_spack_environment.sh
+#
 # Bare OS image to run the installed executables
 FROM intel/oneapi-hpckit:2021.4-devel-ubuntu18.04 
 
 #COPY --from=builder /opt/spack-environment /opt/spack-environment
 #COPY --from=builder /opt/view /opt/view
 COPY --from=builder /opt /opt
-#COPY --from=builder /etc/profile.d/z10_spack_environment.sh /etc/profile.d/z10_spack_environment.sh
+COPY --from=builder /etc/profile.d/z10_spack_environment.sh /etc/profile.d/z10_spack_environment.sh
 
 RUN apt-get update
 RUN apt-get install -y git
-RUN apt-get install -y sudo
-RUN sudo apt-get install -y autoconf
-RUN sudo apt-get install -y libtool
+RUN apt-get install -y autoconf
+RUN apt-get install -y libtool
 RUN . /opt/intel/oneapi/setvars.sh
 RUN . /opt/intel/oneapi/mpi/2021.4.0/env/vars.sh
+RUN export PATH=$PATH:/opt/intel/oneapi/mpi/2021.4.0/bin
+RUN export PKG_CONFIG_PATH=/opt/._view/riddck5trjgzhow33jlfod2ijttlx32i/lib/pkgconfig
 
 ENTRYPOINT ["/bin/bash", "--rcfile", "/etc/profile", "-l"]
 
