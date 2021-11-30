@@ -72,7 +72,7 @@ RUN mkdir /opt/spack-environment \
 &&   echo "  view: /opt/view" \
 &&   echo "  compilers:" \
 &&   echo "  - compiler:" \
-&&   echo "      spec: gcc@8.3.1" \
+&&   echo "      spec: gcc@8.4.1" \
 &&   echo "      paths:" \
 &&   echo "        cc: /usr/bin/gcc" \
 &&   echo "        cxx: /usr/bin/g++" \
