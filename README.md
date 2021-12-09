@@ -1,4 +1,4 @@
- Portable Containers for Model Environments
+# HPC-ME: HPC Portable Containers for Model Environments
 
 ## Contents
 What is HPC-ME
