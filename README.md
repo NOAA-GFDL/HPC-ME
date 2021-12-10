@@ -12,10 +12,10 @@
 HPC Portable Container - Model Environments is a set of Dockerfiles, Singularity Definition files, and containers to provide portable model environments for models that require the same set of libraries.  The ultimate goal is to have a community based list of libraries that are needed for compiling, executing, and post-processing earth science models.  We all use many of the same underlying libraries, and by working together we can agree upon a community-based approach to making container usage as standardized as possible. 
 
 ## List of current compilers/MPI/OS
-- [gcc 8/mpich/ubuntu 18](main/Dockerfile_gnu_rhel8)
-- [gcc 8/mpich/RHEL8](main/Dockerfile_gnu_rhel8)
-- [intel oneAPI 2021.4/mpich(impi)/ubuntu 18](main/Dockerfile_intel_ubuntu18.04)
-- [intel oneAPI 2021.4/mpich(impi)/centos 8](main/Dockerfile_intel_centos8)
+- [gcc 8/mpich/ubuntu 20.04](Dockerfile_gnu_ubuntu20.04)
+- [gcc 8/mpich/RHEL8](Dockerfile_gnu_rhel8)
+- [intel oneAPI 2021.4/mpich(impi)/ubuntu 20.04](Dockerfile_intel_ubuntu18.04)
+- [intel oneAPI 2021.4/mpich(impi)/centos 8](Dockerfile_intel_centos8)
 
 ## List of current libraries
 This is the current list of libraries used in the HPC-ME containers.
