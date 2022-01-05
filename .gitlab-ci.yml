@@ -1,7 +1,8 @@
-image: docker:stable
-
-services:
-  - docker:dind
+default:
+  image: docker:stable
+  tags: [docker]
+  services:
+    - docker:dind
 
 variables:
   DOCKER_DRIVER: overlay2
@@ -17,8 +18,6 @@ stages:
 
 build-gcc:
   stage: build
-  tags:
-    - docker
   variables:
     DOCKERFILE: Dockerfile_gnu_ubuntu20.04
   before_script:
@@ -47,8 +46,6 @@ build-gcc:
 
 build-intel:
   stage: build
-  tags:
-    - docker
   variables:
     DOCKERFILE: Dockerfile_intel_ubuntu18.04
   before_script:
