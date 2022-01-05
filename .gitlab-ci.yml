@@ -1,7 +1,8 @@
-image: docker:stable
-
-services:
-  - docker:dind
+default:
+  image: docker:stable
+  tags: [docker]
+  services:
+    - docker:dind
 
 variables:
   DOCKER_DRIVER: overlay2
@@ -17,22 +18,21 @@ stages:
 
 build-gcc:
   stage: build
-  tags:
-    - docker
   variables:
+    DOCKERFILE: Dockerfile_gnu_ubuntu20.04
   before_script:
     - env
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
-    - RUN_IMAGE=$CI_REGISTRY_IMAGE/rhel8-gcc:$(date +%Y-%m-%d)
-    - BUILD_IMAGE=$CI_REGISTRY_IMAGE/rhel8-gcc-build:$(date +%Y-%m-%d)
+    - RUN_IMAGE=$CI_REGISTRY_IMAGE/ubuntu-gcc:$(date +%Y-%m-%d)
+    - BUILD_IMAGE=$CI_REGISTRY_IMAGE/ubuntu-gcc-build:$(date +%Y-%m-%d)
   script:
-    - cd dockerfile_gcc_env
     - docker build
         --target builder
         --build-arg BUILD_DATE=$CI_COMMIT_TIMESTAMP
         --build-arg BUILD_REPO=$DOCKER_ENV_CI_PROJECT_URL
         --build-arg BUILD_REPO_REF=$CI_COMMIT_SHA
         --build-arg BUILDKIT_INLINE_CACHE=1
+        --file "${DOCKERFILE}"
         --tag "${BUILD_IMAGE}" .
     - docker push "${BUILD_IMAGE}"
     - docker build
@@ -40,27 +40,27 @@ build-gcc:
         --build-arg BUILD_REPO=$DOCKER_ENV_CI_PROJECT_URL
         --build-arg BUILD_REPO_REF=$CI_COMMIT_SHA
         --build-arg BUILDKIT_INLINE_CACHE=1
+        --file "${DOCKERFILE}"
         --tag "${RUN_IMAGE}" .
     - docker push "${RUN_IMAGE}"
 
 build-intel:
   stage: build
-  tags:
-    - docker
   variables:
+    DOCKERFILE: Dockerfile_intel_ubuntu18.04
   before_script:
     - env
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
-    - RUN_IMAGE=$CI_REGISTRY_IMAGE/rhel8-intel:$(date +%Y-%m-%d)
-    - BUILD_IMAGE=$CI_REGISTRY_IMAGE/rhel8-intel-build:$(date +%Y-%m-%d)
+    - RUN_IMAGE=$CI_REGISTRY_IMAGE/ubuntu-intel:$(date +%Y-%m-%d)
+    - BUILD_IMAGE=$CI_REGISTRY_IMAGE/ubuntu-intel-build:$(date +%Y-%m-%d)
   script:
-    - cd dockerfile_intel_env
     - docker build
         --target builder
         --build-arg BUILD_DATE=$CI_COMMIT_TIMESTAMP
         --build-arg BUILD_REPO=$DOCKER_ENV_CI_PROJECT_URL
         --build-arg BUILD_REPO_REF=$CI_COMMIT_SHA
         --build-arg BUILDKIT_INLINE_CACHE=1
+        --file "${DOCKERFILE}"
         --tag "${BUILD_IMAGE}" .
     - docker push "${BUILD_IMAGE}"
     - docker build
@@ -68,5 +68,6 @@ build-intel:
         --build-arg BUILD_REPO=$DOCKER_ENV_CI_PROJECT_URL
         --build-arg BUILD_REPO_REF=$CI_COMMIT_SHA
         --build-arg BUILDKIT_INLINE_CACHE=1
+        --file "${DOCKERFILE}"
         --tag "${RUN_IMAGE}" .
     - docker push "${RUN_IMAGE}"
