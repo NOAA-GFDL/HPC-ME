@@ -8,6 +8,8 @@ default:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
 
 variables:
+  RUN_IMAGE: $CI_REGISTRY_IMAGE/$OS-$COMPILER_TYPE:$COMPILER_VERSION
+  BUILD_IMAGE: $CI_REGISTRY_IMAGE/$OS-$COMPILER_TYPE-build:$COMPILER_VERSION
   DOCKER_DRIVER: overlay2
   DOCKER_HOST: tcp://docker:2375
   DOCKER_TLS_CERTDIR: ""
@@ -23,9 +25,9 @@ build-gcc:
   stage: build
   variables:
     DOCKERFILE: Dockerfile_gnu_ubuntu20.04
-    TAG: 9.3.0
-    RUN_IMAGE: $CI_REGISTRY_IMAGE/ubuntu-gcc:$TAG
-    BUILD_IMAGE: $CI_REGISTRY_IMAGE/ubuntu-gcc-build:$TAG
+    OS: ubuntu
+    COMPILER_TYPE: gcc
+    COMPILER_VERSION: 9.3.0
   script:
     - docker build
         --target builder
