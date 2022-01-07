@@ -3,6 +3,9 @@ default:
   tags: [docker]
   services:
     - docker:dind
+  before_script:
+    - env
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
 
 variables:
   DOCKER_DRIVER: overlay2
@@ -20,11 +23,9 @@ build-gcc:
   stage: build
   variables:
     DOCKERFILE: Dockerfile_gnu_ubuntu20.04
-  before_script:
-    - env
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
-    - RUN_IMAGE=$CI_REGISTRY_IMAGE/ubuntu-gcc:$(date +%Y-%m-%d)
-    - BUILD_IMAGE=$CI_REGISTRY_IMAGE/ubuntu-gcc-build:$(date +%Y-%m-%d)
+    TAG: 9.3.0
+    RUN_IMAGE: $CI_REGISTRY_IMAGE/ubuntu-gcc:$TAG
+    BUILD_IMAGE: $CI_REGISTRY_IMAGE/ubuntu-gcc-build:$TAG
   script:
     - docker build
         --target builder
@@ -48,11 +49,9 @@ build-intel:
   stage: build
   variables:
     DOCKERFILE: Dockerfile_intel_ubuntu18.04
-  before_script:
-    - env
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
-    - RUN_IMAGE=$CI_REGISTRY_IMAGE/ubuntu-intel:$(date +%Y-%m-%d)
-    - BUILD_IMAGE=$CI_REGISTRY_IMAGE/ubuntu-intel-build:$(date +%Y-%m-%d)
+    TAG: 2022.1.1
+    RUN_IMAGE: $CI_REGISTRY_IMAGE/ubuntu-intel:$TAG
+    BUILD_IMAGE: $CI_REGISTRY_IMAGE/ubuntu-intel-build:$TAG
   script:
     - docker build
         --target builder
