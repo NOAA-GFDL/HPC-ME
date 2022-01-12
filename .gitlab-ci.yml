@@ -1,9 +1,36 @@
-image: docker:stable
+# use yaml anchor for the script as script cannot inherit
+.buildScript: &buildScript
+  script:
+    - docker build
+        --target builder
+        --build-arg BUILD_DATE=$CI_COMMIT_TIMESTAMP
+        --build-arg BUILD_REPO=$DOCKER_ENV_CI_PROJECT_URL
+        --build-arg BUILD_REPO_REF=$CI_COMMIT_SHA
+        --build-arg BUILDKIT_INLINE_CACHE=1
+        --file "${DOCKERFILE}"
+        --tag "${BUILD_IMAGE}" .
+    - docker push "${BUILD_IMAGE}"
+    - docker build
+        --build-arg BUILD_DATE=$CI_COMMIT_TIMESTAMP
+        --build-arg BUILD_REPO=$DOCKER_ENV_CI_PROJECT_URL
+        --build-arg BUILD_REPO_REF=$CI_COMMIT_SHA
+        --build-arg BUILDKIT_INLINE_CACHE=1
+        --file "${DOCKERFILE}"
+        --tag "${RUN_IMAGE}" .
+    - docker push "${RUN_IMAGE}"
 
-services:
-  - docker:dind
+default:
+  image: docker:stable
+  tags: [docker]
+  services:
+    - docker:dind
+  before_script:
+    - env
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
 
 variables:
+  RUN_IMAGE: $CI_REGISTRY_IMAGE/$OS-$COMPILER_TYPE:$COMPILER_VERSION
+  BUILD_IMAGE: $CI_REGISTRY_IMAGE/$OS-$COMPILER_TYPE-build:$COMPILER_VERSION
   DOCKER_DRIVER: overlay2
   DOCKER_HOST: tcp://docker:2375
   DOCKER_TLS_CERTDIR: ""
@@ -15,58 +42,38 @@ variables:
 stages:
   - build
 
-build-gcc:
+build-rhel-gcc:
   stage: build
-  tags:
-    - docker
   variables:
-  before_script:
-    - env
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
-    - RUN_IMAGE=$CI_REGISTRY_IMAGE/rhel8-gcc:$(date +%Y-%m-%d)
-    - BUILD_IMAGE=$CI_REGISTRY_IMAGE/rhel8-gcc-build:$(date +%Y-%m-%d)
-  script:
-    - cd dockerfile_gcc_env
-    - docker build
-        --target builder
-        --build-arg BUILD_DATE=$CI_COMMIT_TIMESTAMP
-        --build-arg BUILD_REPO=$DOCKER_ENV_CI_PROJECT_URL
-        --build-arg BUILD_REPO_REF=$CI_COMMIT_SHA
-        --build-arg BUILDKIT_INLINE_CACHE=1
-        --tag "${BUILD_IMAGE}" .
-    - docker push "${BUILD_IMAGE}"
-    - docker build
-        --build-arg BUILD_DATE=$CI_COMMIT_TIMESTAMP
-        --build-arg BUILD_REPO=$DOCKER_ENV_CI_PROJECT_URL
-        --build-arg BUILD_REPO_REF=$CI_COMMIT_SHA
-        --build-arg BUILDKIT_INLINE_CACHE=1
-        --tag "${RUN_IMAGE}" .
-    - docker push "${RUN_IMAGE}"
+    DOCKERFILE: Dockerfile_gnu_rhel8
+    OS: rhel
+    COMPILER_TYPE: gcc
+    COMPILER_VERSION: '11.2'
+  <<: *buildScript
 
-build-intel:
+build-ubuntu-gcc:
   stage: build
-  tags:
-    - docker
   variables:
-  before_script:
-    - env
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
-    - RUN_IMAGE=$CI_REGISTRY_IMAGE/rhel8-intel:$(date +%Y-%m-%d)
-    - BUILD_IMAGE=$CI_REGISTRY_IMAGE/rhel8-intel-build:$(date +%Y-%m-%d)
-  script:
-    - cd dockerfile_intel_env
-    - docker build
-        --target builder
-        --build-arg BUILD_DATE=$CI_COMMIT_TIMESTAMP
-        --build-arg BUILD_REPO=$DOCKER_ENV_CI_PROJECT_URL
-        --build-arg BUILD_REPO_REF=$CI_COMMIT_SHA
-        --build-arg BUILDKIT_INLINE_CACHE=1
-        --tag "${BUILD_IMAGE}" .
-    - docker push "${BUILD_IMAGE}"
-    - docker build
-        --build-arg BUILD_DATE=$CI_COMMIT_TIMESTAMP
-        --build-arg BUILD_REPO=$DOCKER_ENV_CI_PROJECT_URL
-        --build-arg BUILD_REPO_REF=$CI_COMMIT_SHA
-        --build-arg BUILDKIT_INLINE_CACHE=1
-        --tag "${RUN_IMAGE}" .
-    - docker push "${RUN_IMAGE}"
+    DOCKERFILE: Dockerfile_gnu_ubuntu20.04
+    OS: ubuntu
+    COMPILER_TYPE: gcc
+    COMPILER_VERSION: 9.3.0
+  <<: *buildScript
+
+build-centos-intel:
+  stage: build
+  variables:
+    DOCKERFILE: Dockerfile_intel_ubuntu18.04
+    OS: centos
+    COMPILER_TYPE: intel
+    COMPILER_VERSION: 2022.1.1
+  <<: *buildScript
+
+build-ubuntu-intel:
+  stage: build
+  variables:
+    DOCKERFILE: Dockerfile_intel_ubuntu18.04
+    OS: ubuntu
+    COMPILER_TYPE: intel
+    COMPILER_VERSION: 2022.1.1
+  <<: *buildScript
