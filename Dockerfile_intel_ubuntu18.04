@@ -97,6 +97,9 @@ RUN . /etc/skel/.bashrc && \
 FROM intel/oneapi-hpckit:2022.1.1-devel-ubuntu18.04  
 COPY --from=builder /opt/spack-environment /opt/spack-environment
 COPY --from=builder /opt/view /opt/view
+COPY --from=builder /opt/intel/linux-ubuntu18.04-x86_64 /opt/intel/linux-ubuntu18.04-x86_64
+COPY --from=builder /opt/intel/oneapi /opt/intel/oneapi
+COPY --from=builder /opt/intel/bin /opt/intel/bin
 COPY --from=builder /etc/profile.d/z10_spack_environment.sh /etc/profile.d/z10_spack_environment.sh
 
 RUN apt-get update
