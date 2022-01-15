@@ -91,6 +91,10 @@ RUN mkdir /opt/spack-environment \
 &&   echo "  config:" \
 &&   echo "    install_tree: /opt/software") > /opt/spack-environment/spack.yaml
 
+RUN git clone https://github.com/spack/spack.git \
+    && cd spack \
+    && git checkout c24413a530ee4cddc630d79aa67fada7d82a86e5
+
 # Install the software, remove unnecessary deps
 RUN cd /opt/spack-environment && \
     . /spack/share/spack/setup-env.sh && \ 
