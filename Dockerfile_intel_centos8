@@ -52,16 +52,13 @@ RUN mkdir /opt/spack-environment \
 &&   echo "  - udunits@2.2.28 %intel@2021.4.0" \
 &&   echo "  - w3emc@2.9.0 %intel@2021.4.0" \
 &&   echo "  - w3nco@2.4.1 %intel@2021.4.0" \
-&&   echo "  - wrf-io@1.2.0 %intel@2021.4.0" \
+&&   echo "  - wrf-io@1.2.0 ^intel-mpi@2019.10.317 %intel@2021.4.0" \
 &&   echo "  - xerces-c@3.2.3 %intel@2021.4.0" \
 &&   echo "  - xz@5.2.5 %intel@2021.4.0" \
 &&   echo "  - zlib@1.2.11 %intel@2021.4.0" \
 &&   echo "  - lmod@8.5.6 %intel@2021.4.0" \
 &&   echo "  - nccmp@1.8.6.5 %intel@2021.4.0" \ 
-&&   echo "  - nco@4.7.9 %intel@2021.4.0" \ 
-&&   echo "  - cray-netcdf@4.6.3.2 %intel@2021.4.0" \
-&&   echo "  - cray-hdf5@1.10.5.2 %intel@2021.4.0" \
-&&   echo "  - uberftp %intel@2021.4.0" \
+&&   echo "  - nco@4.7.9 ^intel-mpi@2019.10.317 %intel@2021.4.0" \ 
 &&   echo "  view: /opt/view" \
 &&   echo "  mirrors:" \
 &&   echo "    e4s: https://cache.e4s.io" \
@@ -69,9 +66,12 @@ RUN mkdir /opt/spack-environment \
 &&   echo "  config:" \
 &&   echo "    install_tree: /opt/intel") > /opt/spack-environment/spack.yaml
 
-RUN apt-get update -y
-RUN apt-get install -y git
-
+RUN yum install -y python36-devel.x86_64
+RUN yum install -y libstdc++-static
+RUN yum install -y git
+RUN yum install -y patch
+RUN yum install -y diffutils
+RUN yum install -y file
 # Setup spack
 # these instructions are from one of the current non-runner ecpe4s dockerhub images
 RUN git clone https://github.com/spack/spack.git \
@@ -79,13 +79,12 @@ RUN git clone https://github.com/spack/spack.git \
     && git checkout c24413a530ee4cddc630d79aa67fada7d82a86e5 
 
 # Install the software, remove unnecessary deps --fail-fast
-RUN . /opt/intel/oneapi/setvars.sh && \
     cd /opt/spack-environment && \
     . /spack/share/spack/setup-env.sh && \
     spack compiler find && \
+    spack env create -d . && \
     spack env activate . && \
-    apt-get update && \
-    apt-get install -y cpio && \ 
+    yum install -y cpio && \ 
     spack install --fail-fast --dirty && \
     spack gc -y 
 
@@ -93,7 +92,6 @@ RUN . /opt/intel/oneapi/setvars.sh && \
 RUN . /etc/skel/.bashrc && \ 
     cd /opt/spack-environment && \
     . /opt/intel/oneapi/setvars.sh && \
-    cd /opt/spack-environment && \
     . /spack/share/spack/setup-env.sh && \ 
     spack env activate --sh -d . >> /etc/profile.d/z10_spack_environment.sh
 #
@@ -105,14 +103,9 @@ FROM intel/oneapi-hpckit:2021.4-devel-centos8
 COPY --from=builder /opt /opt
 COPY --from=builder /etc/profile.d/z10_spack_environment.sh /etc/profile.d/z10_spack_environment.sh
 
-RUN apt-get update
-RUN apt-get install -y git
-RUN apt-get install -y autoconf
-RUN apt-get install -y libtool
-#RUN . /opt/intel/oneapi/setvars.sh
-#RUN . /opt/intel/oneapi/mpi/2021.4.0/env/vars.sh
-#RUN export PATH=$PATH:/opt/intel/oneapi/mpi/2021.4.0/bin
-#RUN export PKG_CONFIG_PATH=/opt/._view/riddck5trjgzhow33jlfod2ijttlx32i/lib/pkgconfig
+RUN yum install -y git
+RUN yum install -y autoconf
+RUN yum install -y libtool
 
 ENTRYPOINT ["/bin/bash", "--rcfile", "/etc/profile", "-l"]
 
