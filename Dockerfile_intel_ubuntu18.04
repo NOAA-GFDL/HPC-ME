@@ -46,7 +46,7 @@ RUN . /etc/skel/.bashrc && \
 # /opt/spack-environment
 #
 
-RUN apt-get install -y autoreconf
+RUN apt-get install -y autoconf
 RUN apt-get install -y libtool
  
 ENV SPACK_ENV=/opt/spack-environment
