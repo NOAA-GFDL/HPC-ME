@@ -15,7 +15,6 @@ RUN curl -O https://repo.continuum.io/archive/Anaconda3-2020.11-Linux-x86_64.sh 
  
 RUN apt-get update  
 RUN apt-get install -y git
-RUN apt-get install -y libnetcdf-dev
 RUN conda install -c conda-forge libpython-static
 
 # Setup spack
@@ -47,6 +46,9 @@ RUN . /etc/skel/.bashrc && \
 # /opt/spack-environment
 #
 
+RUN apt-get install -y autoconf
+RUN apt-get install -y libtool
+ 
 ENV SPACK_ENV=/opt/spack-environment
 ENV ACLOCAL_PATH=/opt/view/share/aclocal
 ENV CLASSPATH=/opt/intel/linux-ubuntu18.04-westmere/intel-2021.5.0/intel-mpi-2019.10.317-by5ze47puhomk7xxqxik4ht6u7jexg7c/compilers_and_libraries_2020.4.317/linux/mpi/intel64/lib/mpi.jar:/opt/intel/oneapi/mpi/2021.5.0/lib/mpi.jar:/opt/intel/oneapi/dal/2021.5.1/lib/onedal.jar

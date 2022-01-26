@@ -42,32 +42,32 @@ variables:
 stages:
   - build
 
-build-rhel-gcc:
-  stage: build
-  variables:
-    DOCKERFILE: Dockerfile_gnu_rhel8
-    OS: rhel
-    COMPILER_TYPE: gcc
-    COMPILER_VERSION: '11.2'
-  <<: *buildScript
+#build-rhel-gcc:
+#  stage: build
+#  variables:
+#    DOCKERFILE: Dockerfile_gnu_rhel8
+#    OS: rhel
+#    COMPILER_TYPE: gcc
+#    COMPILER_VERSION: '11.2'
+#  <<: *buildScript
 
-build-ubuntu-gcc:
-  stage: build
-  variables:
-    DOCKERFILE: Dockerfile_gnu_ubuntu20.04
-    OS: ubuntu
-    COMPILER_TYPE: gcc
-    COMPILER_VERSION: 9.3.0
-  <<: *buildScript
+#build-ubuntu-gcc:
+#  stage: build
+#  variables:
+#    DOCKERFILE: Dockerfile_gnu_ubuntu20.04
+#    OS: ubuntu
+#    COMPILER_TYPE: gcc
+#    COMPILER_VERSION: 9.3.0
+#  <<: *buildScript
 
-build-centos-intel:
-  stage: build
-  variables:
-    DOCKERFILE: Dockerfile_intel_ubuntu18.04
-    OS: centos
-    COMPILER_TYPE: intel
-    COMPILER_VERSION: 2022.1.1
-  <<: *buildScript
+#build-centos-intel:
+#  stage: build
+#  variables:
+#    DOCKERFILE: Dockerfile_intel_ubuntu18.04
+#    OS: centos
+#    COMPILER_TYPE: intel
+#    COMPILER_VERSION: 2022.1.1
+#  <<: *buildScript
 
 build-ubuntu-intel:
   stage: build
