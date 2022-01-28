@@ -13,14 +13,15 @@ HPC Portable Container - Model Environments is a set of Dockerfiles, Singularity
 
 ## List of current compilers/MPI/OS
 For each container, there is a full version that contains the programming environment and a smaller runtime environment that can be used to run compiled executables. (The runtime container definition files will be added soon.)
-- [gcc 8/mpich/ubuntu 20.04](Dockerfile_gnu_ubuntu20.04)
+#- [gcc 8/mpich/ubuntu 20.04](Dockerfile_gnu_ubuntu20.04)
 - [gcc 8/mpich/RHEL8](Dockerfile_gnu_rhel8)
-- [intel oneAPI 2021.4/mpich(impi)/ubuntu 20.04](Dockerfile_intel_ubuntu18.04)
-- [intel oneAPI 2021.4/mpich(impi)/centos 8](Dockerfile_intel_centos8)
+- [intel oneAPI 2022.1/mpich(impi)/ubuntu 18.04](Dockerfile_intel_ubuntu18.04)
+#- [intel oneAPI 2021.4/mpich(impi)/centos 8](Dockerfile_intel_centos8)
 
 
 ## List of current libraries
-This is the current list of libraries used in the HPC-ME containers.
+This is the current list of most of the libraries used in the HPC-ME containers (We are trying to keep this up-to-date).
+The complete lit should be found in the respective YAML file.
 - [automake@1.16.3](https://spack.readthedocs.io/en/latest/package_list.html#automake)
 - [bacio@2.4.1](https://spack.readthedocs.io/en/latest/package_list.html#bacio)
 - [berkeley-db@18.1.40](https://spack.readthedocs.io/en/latest/package_list.html#berkeley-db)
