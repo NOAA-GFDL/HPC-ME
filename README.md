@@ -6,6 +6,7 @@
 - [List of current libraries](#list-of-current-libraries)
 - [How to build](#how-to-build)
 - [How to use](#how-to-use)
+- [GFDL example](#GFDL-example)
 - [Planned improvements](#planned-improvements)
 
 ## What is HPC-ME
@@ -189,6 +190,9 @@ Usually, GFDL climate models are run on gaea by submitting a runscript to the Sl
 
 We plan to provide more examples and usage scenarios, such as using the HPC-ME containers as-is (i.e. not creating a new container as described above)
 
+## GFDL example
+An example of using an HPC-ME container with the GFDL FRE workflow can be found [here](GFDL_EXAMPLE.md)
+
 ## Planned improvements
 HPC-ME is a work in progress under active development, so please check back or follow the repository for more updates.
 
@@ -200,3 +204,21 @@ We are working to add CI capability to this repository, so that the containers w
 
 ### More usage examples and documentation, especially for MPI applications
 We are still learning how to best use the HPC-ME containers with MPI appliations, so please check back.
+
+### Disclaimer
+
+The United States Department of Commerce (DOC) GitHub project code is provided
+on an 'as is' basis and the user assumes responsibility for its use. DOC has
+relinquished control of the information and no longer has responsibility to
+protect the integrity, confidentiality, or availability of the information. Any
+claims against the Department of Commerce stemming from the use of its GitHub
+project will be governed by all applicable Federal law. Any reference to
+specific commercial products, processes, or services by service mark,
+trademark, manufacturer, or otherwise, does not constitute or imply their
+endorsement, recommendation or favoring by the Department of Commerce. The
+Department of Commerce seal and logo, or the seal and logo of a DOC bureau,
+shall not be used in any manner to imply endorsement of any commercial product
+or activity by DOC or the United States Government.
+
+This project code is made available through GitHub but is managed by NOAA-GFDL
+at https://gitlab.gfdl.noaa.gov.
