@@ -6,7 +6,7 @@
 - [List of current libraries](#list-of-current-libraries)
 - [How to build](#how-to-build)
 - [How to use](#how-to-use)
-- [GFDL example](#GFDL-example)
+- [GFDL example](#gfdl-example)
 - [Planned improvements](#planned-improvements)
 
 ## What is HPC-ME

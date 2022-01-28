@@ -1,12 +1,12 @@
-#GFDL Singularity example
+# GFDL Singularity example
 This example will walk you through several different ways to utilize containers for building a 
 model at GFDL using containers.  The first method can be used by anyone who has access to 
 singularity.  The second method can be used by anyone who has access to build containers with
 singularity using the --fakeroot option (or sudo privleges).
 ## CONTENTS
-[Building your container](#Building-your-container)
-[Building the model in a container at GFDL](#Building-the-model-in-a-container-at-GFDL)
-[Running the model with the container](#Running-the-model-with-the-container)
+- [Building your container](#building-your-container)
+- [Building the model in a container at GFDL](#building-the-model-in-a-container-at-gfdl)
+- [Running the model with the container](#running-the-model-with-the-container)
 ## Building your container
 If you can build a container, you can do by cloning HPC-ME and building with
 ```
