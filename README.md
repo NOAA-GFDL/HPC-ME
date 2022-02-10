@@ -6,6 +6,7 @@
 - [List of current libraries](#list-of-current-libraries)
 - [How to build](#how-to-build)
 - [How to use](#how-to-use)
+- [GFDL example](#gfdl-example)
 - [Planned improvements](#planned-improvements)
 
 ## What is HPC-ME
@@ -13,14 +14,15 @@ HPC Portable Container - Model Environments is a set of Dockerfiles, Singularity
 
 ## List of current compilers/MPI/OS
 For each container, there is a full version that contains the programming environment and a smaller runtime environment that can be used to run compiled executables. (The runtime container definition files will be added soon.)
-- [gcc 8/mpich/ubuntu 20.04](Dockerfile_gnu_ubuntu20.04)
+#- [gcc 8/mpich/ubuntu 20.04](Dockerfile_gnu_ubuntu20.04)
 - [gcc 8/mpich/RHEL8](Dockerfile_gnu_rhel8)
-- [intel oneAPI 2021.4/mpich(impi)/ubuntu 20.04](Dockerfile_intel_ubuntu18.04)
-- [intel oneAPI 2021.4/mpich(impi)/centos 8](Dockerfile_intel_centos8)
+- [intel oneAPI 2022.1/mpich(impi)/ubuntu 18.04](Dockerfile_intel_ubuntu18.04)
+#- [intel oneAPI 2021.4/mpich(impi)/centos 8](Dockerfile_intel_centos8)
 
 
 ## List of current libraries
-This is the current list of libraries used in the HPC-ME containers.
+This is the current list of most of the libraries used in the HPC-ME containers (We are trying to keep this up-to-date).
+The complete lit should be found in the respective YAML file.
 - [automake@1.16.3](https://spack.readthedocs.io/en/latest/package_list.html#automake)
 - [bacio@2.4.1](https://spack.readthedocs.io/en/latest/package_list.html#bacio)
 - [berkeley-db@18.1.40](https://spack.readthedocs.io/en/latest/package_list.html#berkeley-db)
@@ -188,6 +190,9 @@ Usually, GFDL climate models are run on gaea by submitting a runscript to the Sl
 
 We plan to provide more examples and usage scenarios, such as using the HPC-ME containers as-is (i.e. not creating a new container as described above)
 
+## GFDL example
+An example of using an HPC-ME container with the GFDL FRE workflow can be found [here](GFDL_EXAMPLE.md)
+
 ## Planned improvements
 HPC-ME is a work in progress under active development, so please check back or follow the repository for more updates.
 
@@ -199,3 +204,21 @@ We are working to add CI capability to this repository, so that the containers w
 
 ### More usage examples and documentation, especially for MPI applications
 We are still learning how to best use the HPC-ME containers with MPI appliations, so please check back.
+
+### Disclaimer
+
+The United States Department of Commerce (DOC) GitHub project code is provided
+on an 'as is' basis and the user assumes responsibility for its use. DOC has
+relinquished control of the information and no longer has responsibility to
+protect the integrity, confidentiality, or availability of the information. Any
+claims against the Department of Commerce stemming from the use of its GitHub
+project will be governed by all applicable Federal law. Any reference to
+specific commercial products, processes, or services by service mark,
+trademark, manufacturer, or otherwise, does not constitute or imply their
+endorsement, recommendation or favoring by the Department of Commerce. The
+Department of Commerce seal and logo, or the seal and logo of a DOC bureau,
+shall not be used in any manner to imply endorsement of any commercial product
+or activity by DOC or the United States Government.
+
+This project code is made available through GitHub but is managed by NOAA-GFDL
+at https://gitlab.gfdl.noaa.gov.
