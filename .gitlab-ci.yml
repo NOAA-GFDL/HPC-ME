@@ -72,7 +72,7 @@ build-esm4-intel:
   stage: build
   variables:
     DOCKERFILE: Dockerfile_intel_esm4 
-    OS: ubuntu
+    OS: esm4
     COMPILER_TYPE: intel
     COMPILER_VERSION: 2022.1.1
   <<: *buildScript
