@@ -1,0 +1,36 @@
+#FROM intel/oneapi-hpckit:2021.2-devel-centos8 as builder
+FROM ecpe4s/hpc-me.ubuntu20.04:2022-02-17 as builder
+LABEL maintainer "Tom Robinson"
+
+#-------------------------------------------------------------
+## Clone the model
+RUN cd /opt \
+ && git clone --recursive https://github.com/NOAA-GFDL/ESM4.git -b main
+## Build the model
+RUN . /opt/intel/oneapi/setvars.sh \
+ && . /spack/share/spack/setup-env.sh \
+ && spack load libtool@2.4.6%gcc@11.1.0\
+ && spack load pkgconf@1.8.0%intel@2021.5.0 \
+ && spack load netcdf-c@4.8.0 \
+ && spack load /rnoohsq \
+ && cd /opt/ESM4/exec \
+ && make SH=sh \
+ && cp esm4.1.x /opt/ESM4 
+#\
+# && make clean_all
+
+##############################################################################################################
+# Stage 2 with the minimum
+#FROM intel/oneapi-runtime:centos8
+#RUN ls
+#COPY --from=builder /opt/netcdf-c /opt/netcdf-c
+#COPY --from=builder /opt/netcdf-fortran /opt/netcdf-fortran
+#COPY --from=builder /opt/hdf5 /opt/hdf5
+#COPY --from=builder /opt/ESM4 /opt/ESM4
+# Update environment for running ESM4
+ENV PATH=/opt/ESM4/exec:${PATH}
+ENV LD_LIBRARY_PATH=/opt/ESM4/fms/build/libFMS/.libs:${LD_LIBRARY_PATH}
+ENV LIBRARY_PATH=/opt/ESM4/fms/build/libFMS/.libs:${LIBRARY_PATH}
+## Add permissions to the ESM4
+RUN chmod 777 /opt/ESM4/esm4.1.x
+
