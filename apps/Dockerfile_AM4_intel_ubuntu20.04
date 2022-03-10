@@ -1,7 +1,7 @@
 FROM ecpe4s/ubuntu20.04-oneapi-x86_64:22.02
 
 #COPY /compilers_intel_ubuntu20.04.yaml /spack/etc/spack/linux/compilers.yaml
-COPY spack_intel_ubuntu20.04_e4s.yaml /spack.yaml
+COPY spack_intel_gfdl_model.yaml /spack.yaml
 
 
 RUN export SPACK_DISABLE_LOCAL_CONFIG=1 \
