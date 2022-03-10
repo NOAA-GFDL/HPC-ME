@@ -1,6 +1,14 @@
-#FROM intel/oneapi-hpckit:2021.2-devel-centos8 as builder
-FROM ecpe4s/hpc-me.ubuntu20.04:2022-02-17 as builder
+FROM ecpe4s/ubuntu20.04-oneapi-x86_64:22.02 as builder
 LABEL maintainer "Tom Robinson"
+
+COPY spack_intel_gfdl_model.yaml /spack.yaml
+RUN export SPACK_DISABLE_LOCAL_CONFIG=1 \
+ && export SPACK_USER_CACHE_PATH=/tmp/_spack_cache \
+ && . /spack/share/spack/setup-env.sh \
+ && spack -e . concretize -f | tee concretize.log \
+ && spack -e . buildcache keys -it \
+ && spack -e . install --cache-only \
+ && spack clean -a
 
 #-------------------------------------------------------------
 ## Clone the model
