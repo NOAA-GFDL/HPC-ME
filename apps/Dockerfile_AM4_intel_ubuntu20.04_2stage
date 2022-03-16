@@ -1,0 +1,41 @@
+FROM ecpe4s/ubuntu20.04-oneapi-x86_64:22.02 as builder
+
+#COPY /compilers_intel_ubuntu20.04.yaml /spack/etc/spack/linux/compilers.yaml
+COPY spack_intel_gfdl_model.yaml /spack.yaml
+
+
+RUN export SPACK_DISABLE_LOCAL_CONFIG=1 \
+ && export SPACK_USER_CACHE_PATH=/tmp/_spack_cache \
+ && . /spack/share/spack/setup-env.sh \
+ && spack -e . concretize -f | tee concretize.log \
+ && spack -e . buildcache keys -it \
+ && spack -e . install --cache-only \
+ && spack clean -a
+
+
+#build the model
+RUN cd /opt \
+ && git clone --recursive https://github.com/NOAA-GFDL/AM4.git -b main \
+ && cd AM4/exec \
+ && . /opt/intel/oneapi/setvars.sh \
+ && . /spack/share/spack/setup-env.sh \
+ && spack compiler find \
+ && spack load libtool \
+ && spack load netcdf-fortran \
+ && make HDF_INCLUDE=`pkg-config --cflags hdf5` HDF_LIBS="`pkg-config --libs hdf5` -lhdf5_fortran -lhdf5_hl -lhdf5_hl_fortran" BLD_TYPE=DEBUG \
+ && cp am4_xanadu_2021.03.x /opt/AM4 \
+ && make clean_all
+
+
+#build 2-stage
+FROM intel/oneapi-hpckit:2022.1.2-devel-ubuntu18.04
+COPY --from=builder /opt/AM4/am4_xanadu_2021.03.x /opt/AM4/am4_xanadu_2021.03.x
+COPY --from=builder /spack/opt/spack/linux-ubuntu20.04-x86_64/intel-2021.5.0 /spack/opt/spack/linux-ubuntu20.04-x86_64/intel-2021.5.0
+
+RUN apt-get update -y
+RUN apt-get install -y intel-basekit
+RUN apt-get install -y intel-hpckit
+
+ENV LD_LIBRARY_PATH=/opt/intel/oneapi/compiler/2022.0.2/linux/compiler/lib/intel64_lin:/opt/intel/oneapi/mpi/2021.5.1/lib:/opt/intel/oneapi/inspector/2022.0.0/lib64:/opt/intel/oneapi/mkl/2022.0.1/lib/intel64:/opt/intel/oneapi/mpi/2021.5.1/lib:${LD_LIBRARY_PATH}
+
+ENV LIBRARY_PATH=${LD_LIBRARY_PATH}
