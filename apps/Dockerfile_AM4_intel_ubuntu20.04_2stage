@@ -30,9 +30,11 @@ RUN cd /opt \
 #build 2-stage
 FROM ubuntu:20.04
 COPY --from=builder /opt/AM4/am4_xanadu_2021.03.x /opt/AM4/am4_xanadu_2021.03.x
-COPY --from=builder /spack/opt/spack/linux-ubuntu20.04-x86_64/intel-2021.5.0 /spack/opt/spack/linux-ubuntu20.04-x86_64/intel-2021.5.0
-
+#COPY --from=builder /spack/opt/spack/linux-ubuntu20.04-x86_64/intel-2021.5.0 /spack/opt/spack/linux-ubuntu20.04-x86_64/intel-2021.5.0
+COPY --from=builder /spack /spack
+COPY --from=builder /opt/intel/oneapi /opt/intel/oneapi
 RUN apt-get update -y
+RUN apt-get install -y make
 RUN apt-get install -y wget
 RUN apt-get install -y sudo
 RUN apt-get install -y gpg
@@ -41,11 +43,17 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
 
 RUN echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
 
+RUN cd /opt \
+ && . /opt/intel/oneapi/setvars.sh \
+ && . /spack/share/spack/setup-env.sh
+
 RUN sudo apt-get update 
 RUN sudo apt-get install -y intel-oneapi-runtime-libs
 
-ENV LD_LIBRARY_PATH=opt/intel/oneapi/lib/intel64:/spack/opt/spack/linux-ubuntu20.04-x86_64/intel-2021.5.0/hdf5-1.10.7-t56dr5xsdtwkgsw6jy4uukaank5idrid/lib:/spack/opt/spack/linux-ubuntu20.04-x86_64/intel-2021.5.0/netcdf-c-4.8.0-ftcnwzsdgnc257ilko4yltvefjvwq6yc/lib:/spack/opt/spack/linux-ubuntu20.04-x86_64/intel-2021.5.0/netcdf-fortran-4.5.3-dwekbcfxqslsewrwkm3a4wq7xx2nqned/lib:${LD_LIBRARY_PATH}
+ENV LD_LIBRARY_PATH=opt/intel/oneapi/lib/intel64:/spack/opt/spack/linux-ubuntu20.04-x86_64/intel-2021.5.0/hdf5-1.10.7-t56dr5xsdtwkgsw6jy4uukaank5idrid/lib:/spack/opt/spack/linux-ubuntu20.04-x86_64/intel-2021.5.0/hdf5-1.10.7-t56dr5xsdtwkgsw6jy4uukaank5idrid/lib/pkgconfig:/spack/opt/spack/linux-ubuntu20.04-x86_64/intel-2021.5.0/netcdf-c-4.8.0-ftcnwzsdgnc257ilko4yltvefjvwq6yc/lib:/spack/opt/spack/linux-ubuntu20.04-x86_64/intel-2021.5.0/netcdf-fortran-4.5.3-dwekbcfxqslsewrwkm3a4wq7xx2nqned/lib:${LD_LIBRARY_PATH}
 
-ENV PATH=/opt/intel/oneapi/lib/intel64/bin:/opt/intel/oneapi/lib/intel64/libfabric/bin:${PATH}
+ENV PKG_CONFIG_PATH=/spack/opt/spack/linux-ubuntu20.04-x86_64/intel-2021.5.0/hdf5-1.10.7-t56dr5xsdtwkgsw6jy4uukaank5idrid/lib/pkgconfig:${PKG_CONFIG_PATH}
+
+ENV PATH=/spack/opt/spack/linux-ubuntu20.04-x86_64/intel-2021.5.0/netcdf-fortran-4.5.3-dwekbcfxqslsewrwkm3a4wq7xx2nqned/bin:/spack/opt/spack/linux-ubuntu20.04-x86_64/intel-2021.5.0/pkgconf-1.8.0-zvekjwu2ymhudks7qvhctp6oubet6qpw/bin:/spack/opt/spack/linux-ubuntu20.04-x86_64/intel-2021.5.0/netcdf-c-4.8.0-ftcnwzsdgnc257ilko4yltvefjvwq6yc/bin:/opt/intel/oneapi/lib/intel64/bin:/opt/intel/oneapi/lib/intel64/libfabric/bin:${PATH}
 
 ENV LIBRARY_PATH=${LD_LIBRARY_PATH}
