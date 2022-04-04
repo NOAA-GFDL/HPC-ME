@@ -29,8 +29,9 @@ default:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
 
 variables:
-  RUN_IMAGE: $CI_REGISTRY_IMAGE/$OS-$COMPILER_TYPE:$COMPILER_VERSION
-  BUILD_IMAGE: $CI_REGISTRY_IMAGE/$OS-$COMPILER_TYPE-build:$COMPILER_VERSION
+  APP: "base"
+  RUN_IMAGE: $CI_REGISTRY_IMAGE/$APP-$OS-$COMPILER_TYPE:$COMPILER_VERSION
+  BUILD_IMAGE: $CI_REGISTRY_IMAGE/$APP-$OS-$COMPILER_TYPE-build:$COMPILER_VERSION
   DOCKER_DRIVER: overlay2
   DOCKER_HOST: tcp://docker:2375
   DOCKER_TLS_CERTDIR: ""
@@ -71,7 +72,8 @@ stages:
 build-esm4-intel:
   stage: build
   variables:
-    DOCKERFILE: apps/Dockerfile_intel_esm4 
+    DOCKERFILE: apps/Dockerfile_intel_esm4
+    APP: "base" 
     OS: esm4
     COMPILER_TYPE: intel
     COMPILER_VERSION: 2022.1.1
@@ -81,6 +83,7 @@ build-am4-intel:
   stage: build
   variables:
     DOCKERFILE: apps/Dockerfile_AM4_intel_ubuntu20.04_2stage
+    APP: "base"
     OS: am4
     COMPILER_TYPE: intel
     COMPILER_VERSION: 2022.1.1
@@ -90,6 +93,7 @@ build-ubuntu-intel:
   stage: build
   variables:
     DOCKERFILE: Dockerfile_intel_ubuntu20.04
+    APP: "base"
     OS: ubuntu20.04
     COMPILER_TYPE: intel
     COMPILER_VERSION: 2022.1.1
