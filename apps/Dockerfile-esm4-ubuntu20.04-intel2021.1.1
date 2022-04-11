@@ -1,0 +1,46 @@
+FROM ecpe4s/ubuntu20.04-oneapi-x86_64:22.02 as builder
+LABEL maintainer "Tom Robinson"
+
+COPY apps/spack_intel_gfdl_model.yaml /spack.yaml
+
+RUN export SPACK_DISABLE_LOCAL_CONFIG=1 \
+ && export SPACK_USER_CACHE_PATH=/tmp/_spack_cache \
+ && . /spack/share/spack/setup-env.sh \
+ && spack -e . concretize -f | tee concretize.log \
+ && spack -e . buildcache keys -it \
+ && spack -e . install --cache-only \
+ && spack clean -a
+
+#-------------------------------------------------------------
+## Clone the model
+RUN cd /opt \
+ && git clone --recursive https://github.com/NOAA-GFDL/ESM4.git -b main
+## Build the model
+RUN . /opt/intel/oneapi/setvars.sh \
+ && . /spack/share/spack/setup-env.sh \
+ && spack compiler find \
+ && spack load libtool \
+ && spack load pkgconf \
+ && spack load netcdf-c \
+ && spack load netcdf-fortran \
+ && cd /opt/ESM4/exec \
+ && make SH=sh \
+ && cp esm4.1.x /opt/ESM4 
+#\
+# && make clean_all
+
+##############################################################################################################
+# Stage 2 with the minimum
+#FROM intel/oneapi-runtime:centos8
+#RUN ls
+#COPY --from=builder /opt/netcdf-c /opt/netcdf-c
+#COPY --from=builder /opt/netcdf-fortran /opt/netcdf-fortran
+#COPY --from=builder /opt/hdf5 /opt/hdf5
+#COPY --from=builder /opt/ESM4 /opt/ESM4
+# Update environment for running ESM4
+ENV PATH=/opt/ESM4/exec:${PATH}
+ENV LD_LIBRARY_PATH=/opt/ESM4/fms/build/libFMS/.libs:${LD_LIBRARY_PATH}
+ENV LIBRARY_PATH=/opt/ESM4/fms/build/libFMS/.libs:${LIBRARY_PATH}
+## Add permissions to the ESM4
+RUN chmod 777 /opt/ESM4/esm4.1.x
+

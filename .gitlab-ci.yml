@@ -77,14 +77,14 @@ build-esm4-intel:
     COMPILER_VERSION: 2022.1.1
   <<: *buildScript
 
-#build-am4-intel:
-#  stage: build
-#  variables:
-#    DOCKERFILE: apps/Dockerfile_AM4_intel_ubuntu20.04
-#    OS: am4
-#    COMPILER_TYPE: intel
-#    COMPILER_VERSION: 2022.1.1
-#  <<: *buildScript
+build-am4-intel:
+  stage: build
+  variables:
+    DOCKERFILE: apps/Dockerfile_AM4_intel_ubuntu20.04_2stage
+    OS: am4
+    COMPILER_TYPE: intel
+    COMPILER_VERSION: 2022.1.1
+  <<: *buildScript
 
 build-ubuntu-intel:
   stage: build
