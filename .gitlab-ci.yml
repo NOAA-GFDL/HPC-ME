@@ -73,8 +73,8 @@ build-esm4-intel:
   stage: build
   variables:
     DOCKERFILE: apps/Dockerfile_intel_esm4
-    APP: "base" 
-    OS: esm4
+    APP: esm4
+    OS: ubuntu20.04 
     COMPILER_TYPE: intel
     COMPILER_VERSION: 2022.1.1
   <<: *buildScript
@@ -83,8 +83,8 @@ build-am4-intel:
   stage: build
   variables:
     DOCKERFILE: apps/Dockerfile_AM4_intel_ubuntu20.04_2stage
-    APP: "base"
-    OS: am4
+    APP: am4
+    OS: ubuntu20.04
     COMPILER_TYPE: intel
     COMPILER_VERSION: 2022.1.1
   <<: *buildScript
