@@ -1,0 +1,29 @@
+FROM ecpe4s/ubuntu20.04-oneapi-x86_64:22.02
+
+#COPY /compilers_intel_ubuntu20.04.yaml /spack/etc/spack/linux/compilers.yaml
+COPY spack_intel_gfdl_model.yaml /spack.yaml
+
+
+RUN export SPACK_DISABLE_LOCAL_CONFIG=1 \
+ && export SPACK_USER_CACHE_PATH=/tmp/_spack_cache \
+ && . /spack/share/spack/setup-env.sh \
+ && spack -e . concretize -f | tee concretize.log \
+ && spack -e . buildcache keys -it \
+ && spack -e . install --cache-only \
+ && spack clean -a
+
+
+## Build the model
+RUN cd /opt \
+ && git clone --recursive https://github.com/NOAA-GFDL/AM4.git -b main \
+ && cd AM4/exec \
+ && . /opt/intel/oneapi/setvars.sh \
+ && . /spack/share/spack/setup-env.sh \
+ && spack compiler find \
+ && spack load libtool \
+ && spack load netcdf-fortran \
+ && make HDF_INCLUDE=`pkg-config --cflags hdf5` HDF_LIBS="`pkg-config --libs hdf5` -lhdf5_fortran -lhdf5_hl -lhdf5_hl_fortran" BLD_TYPE=DEBUG \
+ && cp am4_xanadu_2021.03.x /opt/AM4
+# && make clean_all
+#
+#RUN echo module purge >> /etc/bash.bashrc
