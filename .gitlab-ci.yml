@@ -85,6 +85,7 @@ build-am4-intel:
     DOCKERFILE: apps/Dockerfile_AM4_intel_ubuntu20.04_2stage
     APP: am4
     OS: ubuntu20.04
+
     COMPILER_TYPE: intel
     COMPILER_VERSION: 2022.1.1
   <<: *buildScript
