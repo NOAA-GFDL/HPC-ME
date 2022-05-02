@@ -1,0 +1,62 @@
+# Copies over spack built software needed for building fms
+# run with: docker run --rm -it --shm-size=4g <image hash>
+# oneapi 2021.5 (compilers 2022.1.1)
+FROM gitlab.gfdl.noaa.gov:5050/fre/hpc-me/ubuntu20.04-intel-build:2022.1.1
+
+# install different/updated versions if needed
+ARG netcdfc_version=4.8.0
+ARG netcdff_version=4.5.3
+ARG libyaml_version=0.2.5
+ARG hdf5_version=1.10.7
+#RUN spack install netcdf-c@${netcdfc_version}
+#RUN spack install libyaml@${libyaml_version}
+#RUN spack install netcdf-fortran@${netcdff_version}
+#RUN spack install libyaml@${libyaml_version}
+
+WORKDIR /spack/opt/spack/linux-ubuntu20.04-x86_64/intel-2021.5.0/
+RUN mv netcdf-c-${netcdfc_version}* netcdf-c-${netcdfc_version} && \
+    mv libyaml-${libyaml_version}* libyaml-${libyaml_version} && \
+    mv netcdf-fortran-${netcdff_version}* netcdf-fortran-${netcdff_version} && \
+    mv hdf5-${hdf5_version}* hdf5-${hdf5_version}
+
+FROM ubuntu:20.04
+RUN apt-get update && apt-get -y install autoconf automake libtool make
+
+ARG netcdfc_version=4.8.0
+ARG netcdff_version=4.5.3
+ARG libyaml_version=0.2.5
+ARG hdf5_version=1.10.7
+
+COPY --from=0 /usr/lib/gcc/x86_64-linux-gnu/9 /usr/lib/gcc/x86_64-linux-gnu/9
+COPY --from=0 /spack/opt/spack/linux-ubuntu20.04-x86_64/intel-2021.5.0/netcdf-c-${netcdfc_version} /spack/opt/spack/linux-ubuntu20.04-x86_64/intel-2021.5.0/netcdf-c-${netcdfc_version}
+COPY --from=0 /spack/opt/spack/linux-ubuntu20.04-x86_64/intel-2021.5.0/netcdf-fortran-${netcdff_version} /spack/opt/spack/linux-ubuntu20.04-x86_64/intel-2021.5.0/netcdf-fortran-${netcdff_version}
+COPY --from=0 /spack/opt/spack/linux-ubuntu20.04-x86_64/intel-2021.5.0/hdf5-${hdf5_version} /spack/opt/spack/linux-ubuntu20.04-x86_64/intel-2021.5.0/hdf5-${hdf5_version}
+COPY --from=0 /spack/opt/spack/linux-ubuntu20.04-x86_64/intel-2021.5.0/libyaml-${libyaml_version} /spack/opt/spack/linux-ubuntu20.04-x86_64/intel-2021.5.0/libyaml-${libyaml_version}
+COPY --from=0 /opt/intel/oneapi /opt/intel/oneapi
+
+# intel paths are from the setup_vars.sh script
+# github workflow CI doesn't seem to run entrypoint scripts so everything is defined here 
+ENV LD_LIBRARY_PATH=/opt/intel/oneapi/vpl/2022.0.0/lib:/opt/intel/oneapi/tbb/2021.5.0/env/../lib/intel64/gcc4.8:/opt/intel/oneapi/mpi/2021.5.0//libfabric/lib:/opt/intel/oneapi/mpi/2021.5.0//lib/release:/opt/intel/oneapi/mpi/2021.5.0//lib:/opt/intel/oneapi/mkl/2022.0.1/lib/intel64:/opt/intel/oneapi/itac/2021.5.0/slib:/opt/intel/oneapi/ippcp/2021.5.0/lib/intel64:/opt/intel/oneapi/ipp/2021.5.1/lib/intel64:/opt/intel/oneapi/dnnl/2022.0.1/cpu_dpcpp_gpu_dpcpp/lib:/opt/intel/oneapi/debugger/2021.5.0/gdb/intel64/lib:/opt/intel/oneapi/debugger/2021.5.0/libipt/intel64/lib:/opt/intel/oneapi/debugger/2021.5.0/dep/lib:/opt/intel/oneapi/dal/2021.5.1/lib/intel64:/opt/intel/oneapi/compiler/2022.0.1/linux/lib:/opt/intel/oneapi/compiler/2022.0.1/linux/lib/x64:/opt/intel/oneapi/compiler/2022.0.1/linux/lib/oclfpga/host/linux64/lib:/opt/intel/oneapi/compiler/2022.0.1/linux/compiler/lib/intel64_lin:/opt/intel/oneapi/ccl/2021.5.0/lib/cpu_gpu_dpcpp:/spack/opt/spack/linux-ubuntu20.04-x86_64/intel-2021.5.0/netcdf-fortran-${netcdff_version}/lib:/spack/opt/spack/linux-ubuntu20.04-x86_64/intel-2021.5.0/netcdf-c-${netcdfc_version}/lib:/spack/opt/spack/linux-ubuntu20.04-x86_64/intel-2021.5.0/hdf5-${hdf5_version}/lib:/spack/opt/spack/linux-ubuntu20.04-x86_64/intel-2021.5.0/libyaml-${libyaml_version}/lib:${LD_LIBRARY_PATH}
+ENV PATH=/opt/intel/oneapi/vpl/2022.0.0/bin:/opt/intel/oneapi/mpi/2021.5.0//libfabric/bin:/opt/intel/oneapi/mpi/2021.5.0//bin:/opt/intel/oneapi/mkl/2022.0.1/bin/intel64:/opt/intel/oneapi/itac/2021.5.0/bin:/home/Ryan.Mulhall/bin64:/opt/intel/oneapi/dpcpp-ct/2022.0.0/bin:/opt/intel/oneapi/dev-utilities/2021.5.1/bin:/opt/intel/oneapi/debugger/2021.5.0/gdb/intel64/bin:/opt/intel/oneapi/compiler/2022.0.1/linux/lib/oclfpga/bin:/opt/intel/oneapi/compiler/2022.0.1/linux/bin/intel64:/opt/intel/oneapi/compiler/2022.0.1/linux/bin:/opt/intel/oneapi/clck/2021.5.0/bin/intel64:/spack/opt/spack/linux-ubuntu20.04-x86_64/intel-2021.5.0/netcdf-fortran-${netcdff_version}/bin:/spack/opt/spack/linux-ubuntu20.04-x86_64/intel-2021.5.0/netcdf-c-${netcdfc_version}/bin:${PATH}
+ENV FC="mpiifort"
+ENV CC="mpiicc"
+ENV CFLAGS="-I/spack/opt/spack/linux-ubuntu20.04-x86_64/intel-2021.5.0/netcdf-c-${netcdfc_version}/include -L/spack/opt/spack/linux-ubuntu20.04-x86_64/intel-2021.5.0/netcdf-c-${netcdfc_version}/lib -L/spack/opt/spack/linux-ubuntu20.04-x86_64/intel-2021.5.0/hdf5-${hdf5_version}/lib -I/spack/opt/spack/linux-ubuntu20.04-x86_64/intel-2021.5.0/libyaml-${libyaml_version}/include -L/spack/opt/spack/linux-ubuntu20.04-x86_64/intel-2021.5.0/libyaml-${libyaml_version}/lib -lyaml -lnetcdf"
+ENV FCFLAGS="-I/spack/opt/spack/linux-ubuntu20.04-x86_64/intel-2021.5.0/netcdf-fortran-${netcdff_version}/include -L/spack/opt/spack/linux-ubuntu20.04-x86_64/intel-2021.5.0/netcdf-fortran-${netcdff_version}/lib -lnetcdff"
+
+ENV TBBROOT=/opt/intel/oneapi/tbb/2021.5.0/env/..
+ENV CLCK_ROOT=/opt/intel/oneapi/clck/2021.5.0
+ENV DAALROOT=/opt/intel/oneapi/dal/2021.5.1
+ENV DPCT_BUNDLE_ROOT=/opt/intel/oneapi/dpcpp-ct/2022.0.0
+ENV ONEAPI_ROOT=/opt/intel/oneapi
+ENV VT_MPI=impi4
+ENV ACL_BOARD_VENDOR_PATH=/opt/Intel/OpenCLFPGA/oneAPI/Boards
+ENV FPGA_VARS_DIR=/opt/intel/oneapi/compiler/2022.0.1/linux/lib/oclfpga
+ENV CCL_ROOT=/opt/intel/oneapi/ccl/2021.5.0
+ENV VT_ADD_LIBS="-ldwarf -lelf -lvtunwind -lm -lpthread"
+ENV I_MPI_ROOT=/opt/intel/oneapi/mpi/2021.5.0
+ENV FI_PROVIDER_PATH=/opt/intel/oneapi/mpi/2021.5.0//libfabric/lib/prov:/usr/lib64/libfabric
+ENV DNNLROOT=/opt/intel/oneapi/dnnl/2022.0.1/cpu_dpcpp_gpu_dpcpp
+ENV CMPLR_ROOT=/opt/intel/oneapi/compiler/2022.0.1
+ENV INFOPATH=/opt/intel/oneapi/debugger/2021.5.0/gdb/intel64/lib
+ENV IPPROOT=/opt/intel/oneapi/ipp/2021.5.1
+ENV IPP_TARGET_ARCH=intel64
