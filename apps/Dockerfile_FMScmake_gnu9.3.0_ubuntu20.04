@@ -1,0 +1,41 @@
+# cmake ci image
+# gcc 9.3.0
+FROM ecpe4s/ubuntu20.04-spack as builder
+
+# install different/updated versions if needed
+ARG netcdfc_version=4.8.0
+ARG netcdff_version=4.5.3
+ARG libyaml_version=0.2.5
+ARG hdf5_version=1.10.7
+ARG mpich_version=3.4.2
+ARG cmake_version=3.16.3
+
+ENV PATH="/spack/bin:${PATH}"
+
+RUN spack install netcdf-c@${netcdfc_version} ^mpich@${mpich_version} ^hdf5@${hdf5_version}       \
+                  libyaml@${libyaml_version}                                                      \
+                  netcdf-fortran@${netcdff_version} ^mpich@${mpich_version} ^hdf5@${hdf5_version} \
+                  mpich@${mpich_version} ^mpich@${mpich_version}                                  \
+                  cmake@${cmake_version}
+
+FROM ubuntu:20.04
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get -y install libtool cmake make zip
+
+ARG netcdfc_version=4.8.0
+ARG netcdff_version=4.5.3
+ARG libyaml_version=0.2.5
+ARG hdf5_version=1.10.7
+ARG mpich_version=3.4.2
+
+COPY --from=0 /usr/bin/gcc /usr/bin/gcc
+COPY --from=0 /usr/bin/gfortran /usr/bin/gfortran
+COPY --from=0 /usr/lib/gcc/x86_64-linux-gnu/9 /usr/lib/gcc/x86_64-linux-gnu/9
+COPY --from=0 /usr/lib/x86_64-linux-gnu/libgfortran.so.5 /usr/lib/x86_64-linux-gnu/libgfortran.so.5
+COPY --from=0 /usr/lib/x86_64-linux-gnu/libgfortran.so.5.0.0 /usr/lib/x86_64-linux-gnu/libgfortran.so.5.0.0
+ 
+COPY --from=0 /spack/opt/spack/linux-ubuntu20.04-haswell/gcc-9.3.0 /spack/opt/spack/linux-ubuntu20.04-haswell/gcc-9.3.0
+
+# hashes will need to be updated
+ENV CMAKE_PREFIX_PATH="/spack/opt/spack/linux-ubuntu20.04-haswell/gcc-9.3.0/libyaml-${libyaml_version}-5fifnf6znrtopyteppbhmqpmdban2boz:/spack/opt/spack/linux-ubuntu20.04-haswell/gcc-9.3.0/mpich-${mpich_version}-3423u7muruw56m22za6ny667sya2yjpl:/spack/opt/spack/linux-ubuntu20.04-haswell/gcc-9.3.0/netcdf-c-${netcdfc_version}-5rgcvtuzmfptdrtbpgzgmmpjswyzk7st:/spack/opt/spack/linux-ubuntu20.04-haswell/gcc-9.3.0/netcdf-fortran-${netcdff_version}-ot5hyyyokrjgcu3k5ppbpasditytyud"
+ENV PATH="/spack/opt/spack/linux-ubuntu20.04-haswell/gcc-9.3.0/netcdf-c-${netcdfc_version}-5rgcvtuzmfptdrtbpgzgmmpjswyzk7st/bin:/spack/opt/spack/linux-ubuntu20.04-haswell/gcc-9.3.0/netcdf-fortran-${netcdff_version}-oot5hyyyokrjgcu3k5ppbpasditytyud/bin:$PATH"
