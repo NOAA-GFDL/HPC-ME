@@ -1,0 +1,52 @@
+# Build stage with Spack pre-installed and ready to be used
+# gcc 9.3.0
+FROM ecpe4s/ubuntu20.04-spack as builder
+
+# install different/updated versions if needed
+ARG netcdfc_version=4.8.0
+ARG netcdff_version=4.5.3
+ARG libyaml_version=0.2.5
+ARG hdf5_version=1.10.7
+ARG mpich_version=3.4.2
+
+ENV PATH="/spack/bin:${PATH}"
+
+RUN spack install netcdf-c@${netcdfc_version} ^mpich@${mpich_version} ^hdf5@${hdf5_version}       \
+                  libyaml@${libyaml_version}                                                      \
+                  netcdf-fortran@${netcdff_version} ^mpich@${mpich_version} ^hdf5@${hdf5_version} \
+                  mpich@${mpich_version} ^mpich@${mpich_version}
+
+# rename without spack hashes
+WORKDIR /spack/opt/spack/linux-ubuntu20.04-haswell/gcc-9.3.0/
+RUN mv netcdf-c-${netcdfc_version}* netcdf-c-${netcdfc_version} && \
+    mv libyaml-${libyaml_version}* libyaml-${libyaml_version} && \
+    mv netcdf-fortran-${netcdff_version}* netcdf-fortran-${netcdff_version} && \
+    mv mpich-${mpich_version}* mpich-${mpich_version}
+
+FROM ubuntu:20.04
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get -y install autoconf automake libtool make zip libgfortran-9-dev 
+
+ARG netcdfc_version=4.8.0
+ARG netcdff_version=4.5.3
+ARG libyaml_version=0.2.5
+ARG hdf5_version=1.10.7
+ARG mpich_version=3.4.2
+
+COPY --from=0 /usr/bin/gcc /usr/bin/gcc
+COPY --from=0 /usr/bin/gfortran /usr/bin/gfortran
+COPY --from=0 /usr/lib/gcc/x86_64-linux-gnu/9 /usr/lib/gcc/x86_64-linux-gnu/9
+COPY --from=0 /usr/lib/x86_64-linux-gnu/libgfortran.so.5 /usr/lib/x86_64-linux-gnu/libgfortran.so.5
+COPY --from=0 /usr/lib/x86_64-linux-gnu/libgfortran.so.5.0.0 /usr/lib/x86_64-linux-gnu/libgfortran.so.5.0.0
+ 
+COPY --from=0 /spack/opt/spack/linux-ubuntu20.04-haswell/gcc-9.3.0 /spack/opt/spack/linux-ubuntu20.04-haswell/gcc-9.3.0
+# /home/fms_test_input
+COPY ./unit_tests_input/ /home/unit_tests_input 
+
+ENV LD_LIBRARY_PATH=/spack/opt/spack/linux-ubuntu20.04-haswell/gcc-9.3.0/mpich-${mpich_version}/lib:/spack/opt/spack/linux-ubuntu20.04-haswell/gcc-9.3.0/netcdf-fortran-${netcdff_version}/lib:/spack/opt/spack/linux-ubuntu20.04-haswell/gcc-9.3.0/netcdf-c-${netcdfc_version}/lib:/spack/opt/spack/linux-ubuntu20.04-haswell/gcc-9.3.0/libyaml-${libyaml_version}/lib:${LD_LIBRARY_PATH}
+ENV PATH=/spack/opt/spack/linux-ubuntu20.04-haswell/gcc-9.3.0/mpich-${mpich_version}/bin:/spack/opt/spack/linux-ubuntu20.04-haswell/gcc-9.3.0/netcdf-fortran-${netcdff_version}/bin:/spack/opt/spack/linux-ubuntu20.04-haswell/gcc-9.3.0/netcdf-c-${netcdfc_version}/bin:${PATH}
+ENV FC="mpifort"
+ENV CC="mpicc"
+ENV CFLAGS="-I/spack/opt/spack/linux-ubuntu20.04-haswell/gcc-9.3.0/netcdf-c-${netcdfc_version}/include -I/spack/opt/spack/linux-ubuntu20.04-haswell/gcc-9.3.0/mpich-${mpich_version}/include -I/spack/opt/spack/linux-ubuntu20.04-haswell/gcc-9.3.0/libyaml-${libyaml_version}/include -g"
+ENV FCFLAGS="-I/spack/opt/spack/linux-ubuntu20.04-haswell/gcc-9.3.0/netcdf-fortran-${netcdff_version}/include -I/spack/opt/spack/linux-ubuntu20.04-haswell/gcc-9.3.0/mpich-${mpich_version}/include -g -fbacktrace"
+ENV LDFLAGS="-L/spack/opt/spack/linux-ubuntu20.04-haswell/gcc-9.3.0/netcdf-c-${netcdfc_version}/lib -L/spack/opt/spack/linux-ubuntu20.04-haswell/gcc-9.3.0/netcdf-fortran-${netcdff_version}/lib -L/spack/opt/spack/linux-ubuntu20.04-haswell/gcc-9.3.0/libyaml-${libyaml_version}/lib -L/spack/opt/spack/linux-ubuntu20.04-haswell/gcc-9.3.0/mpich-${mpich_version}/lib -lyaml"
