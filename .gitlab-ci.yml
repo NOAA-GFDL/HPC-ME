@@ -29,7 +29,6 @@ default:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
 
 variables:
-  APP: "base"
   RUN_IMAGE: $CI_REGISTRY_IMAGE/$APP-$OS-$COMPILER_TYPE:$COMPILER_VERSION
   BUILD_IMAGE: $CI_REGISTRY_IMAGE/$APP-$OS-$COMPILER_TYPE-build:$COMPILER_VERSION
   DOCKER_DRIVER: overlay2
@@ -42,37 +41,10 @@ variables:
 
 stages:
   - build
-
-#build-rhel-gcc:
-#  stage: build
-#  variables:
-#    DOCKERFILE: Dockerfile_gnu_rhel8
-#    OS: rhel
-#    COMPILER_TYPE: gcc
-#    COMPILER_VERSION: '11.2'
-#  <<: *buildScript
-
-#build-ubuntu-gcc:
-#  stage: build
-#  variables:
-#    DOCKERFILE: Dockerfile_gnu_ubuntu20.04
-#    OS: ubuntu
-#    COMPILER_TYPE: gcc
-#    COMPILER_VERSION: 9.3.0
-#  <<: *buildScript
-
-#build-centos-intel:
-#  stage: build
-#  variables:
-#    DOCKERFILE: Dockerfile_intel_ubuntu18.04
-#    OS: centos
-#    COMPILER_TYPE: intel
-#    COMPILER_VERSION: 2022.1.1
-#  <<: *buildScript
 build-esm4-intel:
   stage: build
   variables:
-    DOCKERFILE: apps/Dockerfile_intel_esm4
+    DOCKERFILE: apps/Dockerfile-esm4-ubuntu20.04-intel2021.1.1
     APP: esm4
     OS: ubuntu20.04 
     COMPILER_TYPE: intel
@@ -82,10 +54,9 @@ build-esm4-intel:
 build-am4-intel:
   stage: build
   variables:
-    DOCKERFILE: apps/Dockerfile_AM4_intel_ubuntu20.04_2stage
+    DOCKERFILE: apps/Dockerfile-am4-ubuntu20.04-intel2021.1.1-2stage 
     APP: am4
     OS: ubuntu20.04
-
     COMPILER_TYPE: intel
     COMPILER_VERSION: 2022.1.1
   <<: *buildScript
@@ -93,7 +64,7 @@ build-am4-intel:
 build-ubuntu-intel:
   stage: build
   variables:
-    DOCKERFILE: Dockerfile_intel_ubuntu20.04
+    DOCKERFILE: Dockerfile-base-ubuntu20.04-intel2021.1.1 
     APP: "base"
     OS: ubuntu20.04
     COMPILER_TYPE: intel
