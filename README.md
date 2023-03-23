@@ -22,7 +22,7 @@ For each container, there is a full version that contains the programming enviro
 
 ## List of current libraries
 This is the current list of most of the libraries used in the HPC-ME containers (We are trying to keep this up-to-date).
-The complete lit should be found in the respective YAML file.
+The complete list should be found in the respective YAML file.
 - [automake@1.16.3](https://spack.readthedocs.io/en/latest/package_list.html#automake)
 - [bacio@2.4.1](https://spack.readthedocs.io/en/latest/package_list.html#bacio)
 - [berkeley-db@18.1.40](https://spack.readthedocs.io/en/latest/package_list.html#berkeley-db)
@@ -33,13 +33,12 @@ The complete lit should be found in the respective YAML file.
 - [curl@7.78.0](https://spack.readthedocs.io/en/latest/package_list.html#curl)
 - [diffutils@3.7](https://spack.readthedocs.io/en/latest/package_list.html#diffutils)
 - [esmf@8.1.1](https://spack.readthedocs.io/en/latest/package_list.html#esmf)
-- [expat@2.4.1](https://spack.readthedocs.io/en/latest/package_list.html#expat)
+- [expat@2.4.3](https://spack.readthedocs.io/en/latest/package_list.html#expat)
 - [g2@3.4.3](https://spack.readthedocs.io/en/latest/package_list.html#g2)
 - [g2tmpl@1.10.0](https://spack.readthedocs.io/en/latest/package_list.html#g2tmpl)
 - [gdbm@1.19](https://spack.readthedocs.io/en/latest/package_list.html#gdbm)
 - [gsl@2.7](https://spack.readthedocs.io/en/latest/package_list.html#gsl)
 - [hdf5@1.10.7](https://spack.readthedocs.io/en/latest/package_list.html#hdf5)
-- [intel-mpi@2019.10.317](https://spack.readthedocs.io/en/latest/package_list.html#intel-mpi)
 - [ip@3.3.3](https://spack.readthedocs.io/en/latest/package_list.html#ip)
 - [ip2@1.1.2](https://spack.readthedocs.io/en/latest/package_list.html#ip2)
 - [jasper@2.0.32](https://spack.readthedocs.io/en/latest/package_list.html#jasper)
@@ -49,16 +48,20 @@ The complete lit should be found in the respective YAML file.
 - [libmd@1.0.3](https://spack.readthedocs.io/en/latest/package_list.html#libmd)
 - [libpng@1.6.37](https://spack.readthedocs.io/en/latest/package_list.html#libpng)
 - [libsigsegv@2.13](https://spack.readthedocs.io/en/latest/package_list.html#libsigsegv)
+- [libtool@2.4.6](https://spack.readthedocs.io/en/latest/package_list.html#libtool)
 - [libxml2@2.9.12](https://spack.readthedocs.io/en/latest/package_list.html#libxml2)
 - [libyaml@0.2.5](https://spack.readthedocs.io/en/latest/package_list.html#libyaml)
+- [lmod@8.5.6](https://spack.readthedocs.io/en/latest/package_list.html#lmod)
 - [m4@1.4.19](https://spack.readthedocs.io/en/latest/package_list.html#m4)
 - [nasm@2.15.05](https://spack.readthedocs.io/en/latest/package_list.html#nasm)
+- [nccmp@1.8.6.5](https://spack.readthedocs.io/en/latest/package_list.html#nccmp)
+- [nco@4.7.9](https://spack.readthedocs.io/en/latest/package_list.html#nco)
 - [ncurses@6.2](https://spack.readthedocs.io/en/latest/package_list.html#ncurses)
 - [nemsio@2.5.2](https://spack.readthedocs.io/en/latest/package_list.html#nemsio)
 - [netcdf-c@4.8.0](https://spack.readthedocs.io/en/latest/package_list.html#netcdf-c)
 - [netcdf-fortran@4.5.3](https://spack.readthedocs.io/en/latest/package_list.html#netcdf-fortran)
 - [numactl@2.0.14](https://spack.readthedocs.io/en/latest/package_list.html#numactl)
-- [openssl@1.1.1l](https://spack.readthedocs.io/en/latest/package_list.html#openssl)
+- [openssl@1.1.1m](https://spack.readthedocs.io/en/latest/package_list.html#openssl)
 - [parallel-netcdf@1.12.2](https://spack.readthedocs.io/en/latest/package_list.html#parallel-netcdf)
 - [perl@5.34.0](https://spack.readthedocs.io/en/latest/package_list.html#perl)
 - [pkgconf@1.8.0](https://spack.readthedocs.io/en/latest/package_list.html#pkgconf)
@@ -73,12 +76,6 @@ The complete lit should be found in the respective YAML file.
 - [xerces-c@3.2.3](https://spack.readthedocs.io/en/latest/package_list.html#xerces-c)
 - [xz@5.2.5](https://spack.readthedocs.io/en/latest/package_list.html#xz)
 - [zlib@1.2.11](https://spack.readthedocs.io/en/latest/package_list.html#zlib)
-- [lmod@8.5.6](https://spack.readthedocs.io/en/latest/package_list.html#lmod)
-- [nccmp@1.8.6.5](https://spack.readthedocs.io/en/latest/package_list.html#nccmp)
-- [nco@4.7.9](https://spack.readthedocs.io/en/latest/package_list.html#nco)
-- [cray-netcdf@4.6.3.2](https://spack.readthedocs.io/en/latest/package_list.html#cray-netcdf)
-- [cray-hdf5@1.10.5.2](https://spack.readthedocs.io/en/latest/package_list.html#cray-hdf5)
-- [uberftp](https://spack.readthedocs.io/en/latest/package_list.html#uberftp)
 ## How to build
 **We plan to make this step optional soon.** In order to build the Docker images, you will need access to a computer with root-like access, and either docker or singularity installed. If you do not have root-like access to a suitable machine, you can still run images that were already created (e.g. on Docker hub), and we plan on hosting runnable Docker images along with the Dockerfiles in this repository soon. If you have root-like access and docker, start by choosing one of the currently supported model environments from the list above. Then build the Docker container from the Dockerfile using docker build; for example, to build the gcc8/mpich/ubuntu18 container:
 
