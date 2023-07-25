@@ -7,5 +7,6 @@ RUN mkdir /opt/conda/cylc-flow-tools
 COPY ./cylc-flow-tools.yaml /opt/conda/cylc-flow-tools
 COPY ./macro.py /
 RUN mamba env create --file /opt/conda/cylc-flow-tools/cylc-flow-tools.yaml -p /opt/conda/cylc-flow-tools
-RUN /bin/bash -c "cp -f /macro.py /opt/conda/cylc-flow-tools/lib/python3.10/site-packages/metomi/rose/macro.py"
+# finding + replacing the problematic macro.py file with the corrected version
+RUN /bin/bash -c 'export macro=$(find /opt/conda/cylc-flow-tools/lib -wholename */site-packages/metomi/rose) && cp -f /macro.py $macro/macro.py'
 RUN git config --global --add safe.directory /mnt2
