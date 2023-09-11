@@ -10,3 +10,4 @@ RUN mamba env create --file /opt/conda/cylc-flow-tools/cylc-flow-tools.yaml -p /
 # finding + replacing the problematic macro.py file with the corrected version
 RUN /bin/bash -c 'export macro=$(find /opt/conda/cylc-flow-tools/lib -wholename */site-packages/metomi/rose) && cp -f /macro.py $macro/macro.py'
 RUN git config --global --add safe.directory /mnt2
+ENTRYPOINT ["/bin/bash", "-c", "/mnt/runscript.sh"]
