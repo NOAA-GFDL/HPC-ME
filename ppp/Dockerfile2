@@ -2,12 +2,13 @@ FROM condaforge/mambaforge:latest
 # condaforge is based oon a stripped down ubuntu image.  We need some extra bits for frerun + fremake
 # uuid-runtime gives us /usr/bin/uuidgen
 # time gives us /usr/bin/time
-RUN apt update && apt -y install uuid-runtime time csh
+RUN apt update && apt -y install uuid-runtime time csh python
 RUN mkdir /opt/conda/cylc-flow-tools
 COPY ./cylc-flow-tools.yaml /opt/conda/cylc-flow-tools
 COPY ./macro.py /
 RUN mamba env create --file /opt/conda/cylc-flow-tools/cylc-flow-tools.yaml -p /opt/conda/cylc-flow-tools
 # finding + replacing the problematic macro.py file with the corrected version
+RUN pip install -U click pyyaml
 RUN /bin/bash -c 'export macro=$(find /opt/conda/cylc-flow-tools/lib -wholename */site-packages/metomi/rose) && cp -f /macro.py $macro/macro.py'
 RUN git config --global --add safe.directory /mnt2
 ENTRYPOINT ["/bin/bash", "-c", "/mnt/runscript.sh"]
