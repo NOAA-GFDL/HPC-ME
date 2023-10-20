@@ -22,7 +22,7 @@ A history file is already in this directory in the history subdirectory. This fi
 
 1. cd HPC-ME/ppp
 
-2. apptainer run --writable-tmpfs --bind (PATH TO COPIED SETUP/OUTPUT DIR):/mnt -B (PATH TO COPIED POST PROCESSING DIR):/mnt2 tripP.sif
+2. singularity run --writable-tmpfs --bind (PATH TO COPIED SETUP/OUTPUT DIR):/mnt -B (PATH TO COPIED POST PROCESSING DIR):/mnt2 /lustre/f2/dev/Ciheim.Brown/tripP.sif
 
 3. At this point, the container’s runscript will begin to run. The first step will list all available experiments. Copy/paste or type one of the listed experiments and press enter.
 
