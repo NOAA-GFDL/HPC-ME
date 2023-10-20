@@ -1,0 +1,16 @@
+name: cylc-flow-tools
+channels: 
+  - conda-forge
+  - NOAA-GFDL
+dependencies:
+  - hsm
+  - fre-nctools
+  - nco
+  - cdo
+  - netcdf-cxx4
+  - cylc-flow
+  - cylc-rose
+  - metomi-rose
+  - rsync
+  - make
+  - vim  
