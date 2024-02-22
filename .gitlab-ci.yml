@@ -64,9 +64,9 @@ build-am4-intel:
 build-ubuntu-intel:
   stage: build
   variables:
-    DOCKERFILE: Dockerfile-base-ubuntu20.04-intel2021.1.1 
+    DOCKERFILE: Dockerfile-base-ubuntu20.04-intel2023 
     APP: "base"
     OS: ubuntu20.04
     COMPILER_TYPE: intel
-    COMPILER_VERSION: 2022.1.1
+    COMPILER_VERSION: 2023
   <<: *buildScript
