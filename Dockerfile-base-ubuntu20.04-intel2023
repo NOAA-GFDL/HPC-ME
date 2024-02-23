@@ -1,0 +1,20 @@
+FROM ecpe4s/noaa-intel-prototype:2023.09.25 as builder
+LABEL maintainer "Tom Robinson"
+RUN mkdir -p /opt/spack-environment
+# Copy the spack.yaml
+COPY spack_intel23_ubuntu20.04_e4s.yaml /opt/spack-environment/spack.yaml
+# Set up the spack environment with the spack.yaml
+RUN mkdir -p /opt/spack-environment \
+ && cd /opt/spack-environment \
+ && . /spack/share/spack/setup-env.sh \
+ && spack env activate .\
+ && spack install --fail-fast
+# Create the module loads for the packages on startup
+RUN . /spack/share/spack/setup-env.sh \
+ && cd /opt/spack-environment  \
+ && spack env activate --sh -d . >> /etc/profile.d/z10_spack_environment.sh \
+ && spack env activate . && spack env loads \
+ && cat /opt/spack-environment/loads >> /etc/bash.bashrc 
+# Make the container executable
+ENTRYPOINT ["/bin/bash"]
+
