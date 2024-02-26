@@ -1,0 +1,25 @@
+FROM condaforge/mambaforge:latest
+# condaforge is based on a stripped down ubuntu image.  We need some extra bits for frerun + fremake
+
+# apt installs to /usr/bin/
+RUN apt update \
+  && apt -y install uuid-runtime time csh python bc
+
+#RUN apt-get install bc
+
+RUN mkdir /opt/conda/cylc-flow-tools
+
+#CMD pwd 
+COPY cylc-flow-tools.yaml /opt/conda/cylc-flow-tools
+COPY ./macro.py /tmp
+
+# finding + replacing the problematic macro.py file with the corrected version
+RUN conda env create --file /opt/conda/cylc-flow-tools/cylc-flow-tools.yaml -p /opt/conda/cylc-flow-tools \
+  && /bin/bash -c 'export macro=$(find /opt/conda/cylc-flow-tools/lib -wholename */site-packages/metomi/rose) \
+  && mv -f /tmp/macro.py $macro/macro.py' \
+  && git config --global --add safe.directory /mnt2 \
+  && chmod a+w /opt/conda/cylc-flow-tools/lib/python3.11/site-packages \
+  && conda config --add pkgs_dirs /opt/conda/cylc-flow-tools/lib/python3.11/site-packages
+RUN conda install urwid==2.*
+
+ENTRYPOINT ["/bin/bash"]

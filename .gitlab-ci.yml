@@ -70,3 +70,13 @@ build-ubuntu-intel:
     COMPILER_TYPE: intel
     COMPILER_VERSION: 2023
   <<: *buildScript
+
+build-ppp:
+  stage: build
+  variables:
+    DOCKERFILE: ppp/ppp-Dockerfile
+    APP: "base"
+    OS: ppp
+    COMPILER_TYPE: none
+    COMPILER_VERSION: 1
+  <<: *buildScript
