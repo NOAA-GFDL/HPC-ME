@@ -10,8 +10,8 @@ RUN apt update \
 RUN mkdir /opt/conda/cylc-flow-tools
 
 #CMD pwd 
-COPY cylc-flow-tools.yaml /opt/conda/cylc-flow-tools
-COPY ./macro.py /tmp
+COPY ppp/cylc-flow-tools.yaml /opt/conda/cylc-flow-tools
+COPY ppp/macro.py /tmp
 
 # finding + replacing the problematic macro.py file with the corrected version
 RUN conda env create --file /opt/conda/cylc-flow-tools/cylc-flow-tools.yaml -p /opt/conda/cylc-flow-tools \
