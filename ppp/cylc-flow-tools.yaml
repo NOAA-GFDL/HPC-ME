@@ -13,4 +13,5 @@ dependencies:
   - metomi-rose
   - rsync
   - make
-  - vim  
+  - vim
+  - fre-cli  
