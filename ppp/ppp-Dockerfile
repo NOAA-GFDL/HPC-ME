@@ -1,4 +1,5 @@
 FROM condaforge/mambaforge:latest as builder
+LABEL maintainer "Ciheim Brown"
 # condaforge is based on a stripped down ubuntu image.  We need some extra bits for frerun + fremake
 
 # apt installs to /usr/bin/
