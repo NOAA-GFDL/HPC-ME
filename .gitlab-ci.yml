@@ -41,6 +41,17 @@ variables:
 
 stages:
   - build
+
+build-ppp:
+  stage: build
+  variables:
+    DOCKERFILE: ppp/ppp-Dockerfile
+    APP: "base"
+    OS: ppp
+    COMPILER_TYPE: none
+    COMPILER_VERSION: 1
+  <<: *buildScript
+
 build-esm4-intel:
   stage: build
   variables:
@@ -70,3 +81,4 @@ build-ubuntu-intel:
     COMPILER_TYPE: intel
     COMPILER_VERSION: 2023
   <<: *buildScript
+
