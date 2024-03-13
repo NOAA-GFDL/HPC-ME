@@ -1,0 +1,44 @@
+FROM ecpe4s/noaa-intel-prototype:2023.09.25 as builder
+LABEL maintainer "Tom Robinson"
+RUN mkdir -p /opt/spack-environment
+# Copy the spack.yaml
+COPY spack_intel2023_gfdl_model.yaml /opt/spack-environment/spack.yaml
+# Set up the spack environment with the spack.yaml
+RUN mkdir -p /opt/spack-environment \
+ && cd /opt/spack-environment \
+ && . /spack/share/spack/setup-env.sh \
+ && spack env activate .\
+ && spack install --fail-fast
+# Create the spack loads for the packages on startup
+RUN . /spack/share/spack/setup-env.sh \
+ && cd /opt/spack-environment  \
+ && spack env activate --sh -d . >> /etc/profile.d/z10_spack_environment.sh \
+ && spack env activate . && spack env loads \
+ && sed -i 's/%intel@2021.10.0.*//' /opt/spack-environment/loads \
+ && sed -i 's/#/spack load/' /opt/spack-environment/loads \
+ && sed -i 's/module.*//' /opt/spack-environment/loads \
+ && sed -i 's/udun.*/\/rx3zbh3/' /opt/spack-environment/loads \
+ && cat /opt/spack-environment/loads >> /etc/bash.bashrc
+# Build the vortex tracker
+RUN . /spack/share/spack/setup-env.sh \
+ && sed -i 's/module/spack/' /opt/spack-environment/loads \
+ && . /opt/spack-environment/loads \
+ && mkdir -p /apps && cd /apps \
+ && git clone https://github.com/NOAA-GFDL/GFDL-VortexTracker.git && cd /apps/GFDL-VortexTracker/src \
+ && cmake .. -DCMAKE_Fortran_COMPILER="ifort -static" -DCMAKE_C_COMPILER="icc -static" \
+ && make -j 8 VERBOSE=1 \
+ && make install
+# Create the run script
+RUN mkdir -p /apps \
+ && touch /apps/run \
+ && chmod 777 /apps/run \
+ && echo '#/bin/bash' >> /apps/run \
+ && echo '. /spack/share/spack/setup-env.sh' >> /apps/run \
+ && echo '. /opt/spack-environment/loads' >> /apps/run \
+ && echo '${1}'  >> /apps/run
+
+FROM ubuntu:20.04
+COPY --from=builder /apps
+
+# Make the container executable
+ENTRYPOINT ["/bin/bash"]

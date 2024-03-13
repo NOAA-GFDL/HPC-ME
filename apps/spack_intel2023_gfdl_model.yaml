@@ -46,7 +46,8 @@ spack:
   - libyaml@0.2.5
   - /ibbhhra #netcdf-c@4.9.2
   - /3hwhsli #netcdf-fortran@4.6.0
+  - jasper
+  - g2
   - sp@2.3.3
-  - udunits@2.2.28
   - w3emc@2.9.2
   - w3nco@2.4.1
