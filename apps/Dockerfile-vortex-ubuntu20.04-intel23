@@ -37,8 +37,3 @@ RUN mkdir -p /apps \
  && echo '. /opt/spack-environment/loads' >> /apps/run \
  && echo '${1}'  >> /apps/run
 
-FROM ubuntu:20.04
-COPY --from=builder /apps
-
-# Make the container executable
-ENTRYPOINT ["/bin/bash"]
