@@ -1,0 +1,53 @@
+# base image = ecpe4s/ubuntu20.04-oneapi-x86_64:22.02
+# # spack commit = 76b7095445264fb02b53616695fc226266f76695
+# # mirror = https://cache.e4s.io/noaa
+ 
+spack:
+#  mirrors:
+#    E4S: https://cache.e4s.io/noaa
+#
+  packages:
+    all:
+      compiler: [intel@2021.10.0]
+      target: [x86_64]
+      providers:
+        mpi: [intel-oneapi-mpi]
+    intel-oneapi-mpi:
+      buildable: false
+      externals:
+      - spec: intel-oneapi-mpi@2021.10.0
+        prefix: /opt/intel/oneapi
+        modules:
+        - mpi/2021.10.0
+
+  compilers:
+  - compiler:
+      spec: intel@2021.10.0
+      paths:
+        cc: /opt/intel/oneapi/compiler/2023.2.1/linux/bin/intel64/icc
+        cxx: /opt/intel/oneapi/compiler/2023.2.1/linux/bin/intel64/icpc
+        f77: /opt/intel/oneapi/compiler/2023.2.1/linux/bin/intel64/ifort
+        fc: /opt/intel/oneapi/compiler/2023.2.1/linux/bin/intel64/ifort
+      flags: {}
+      operating_system: ubuntu20.04
+      target: x86_64
+      modules:
+      - compiler/2023.2.1
+      environment: {}
+      extra_rpaths:
+      - /opt/intel/oneapi/compiler/2023.2.1/linux/compiler/lib/intel64_lin
+
+  view: false
+  specs:
+  - automake@1.16.5
+  - bacio@2.4.1
+  - libjpeg-turbo@3.0.0
+  - libpng@1.6.37
+  - libyaml@0.2.5
+  - netcdf-c@4.9.2
+  - netcdf-fortran@4.6.0
+  - jasper
+  - g2
+  - sp@2.5.0
+  - w3emc@2.10.0
+  - w3nco@2.4.1
