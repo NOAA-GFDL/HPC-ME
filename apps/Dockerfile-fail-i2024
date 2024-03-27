@@ -1,4 +1,4 @@
-FROM ecpe4s/noaa-intel-prototype:2024.03.22 as builder
+FROM ecpe4s/noaa-intel-prototype:2024.03.27 as builder
 LABEL maintainer "Tom Robinson"
 RUN mkdir -p /opt/spack-environment
 # Copy the spack.yaml
@@ -14,4 +14,4 @@ RUN . /spack/share/spack/setup-env.sh \
  && cd /opt/spack-environment  \
  && spack env activate --sh -d . >> /etc/profile.d/z10_spack_environment.sh \
  && spack env activate . \ 
- && spack env loads 
+ && spack env loads -m lmod
