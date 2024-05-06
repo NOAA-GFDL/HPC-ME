@@ -62,8 +62,8 @@ RUN cd /home \
     && cd FRE-NCTOOLS \
     && export FC=/opt/view/bin/mpif90 \
     && export CC=/opt/view/bin/mpicc \
-    && export FCFLAGS="-I/opt/view/include -g -O2" \
-    && export CFLAGS="-I/opt/view/include -g -O2" \
+    && export FCFLAGS="-I/opt/view/include -g" \
+    && export CFLAGS="-I/opt/view/include -g" \
     && export LDFLAGS="-L/opt/view/lib" \
     && export PATH=$PATH:/opt/view/bin \
     && autoreconf -iv \
@@ -72,13 +72,26 @@ RUN cd /home \
     && make install \
     && cd .. && rm -rf FRE-NCTOOLS
 
+RUN cd /opt/view && touch -a setup_env.sh \
+    && echo '#!/bin/bash'          >> setup_env.sh \
+    && echo 'source /root/.bashrc' >> setup_env.sh \
+    && echo 'export FC=mpif90'   >> setup_env.sh \
+    && echo 'export CC=mpicc'    >> setup_env.sh \
+    && echo 'export CXX=mpic++'  >> setup_env.sh \
+    && echo 'echo "y" | conda create --name pace python=3.11.9'  >> setup_env.sh \
+    && echo 'conda init bash'                                    >> setup_env.sh \
+    && echo 'conda activate pace'                                >> setup_env.sh \
+    && echo 'pip3 install --upgrade pip setuptools wheel'        >> setup_env.sh \
+    && echo 'pip3 install -r requirements_dev.txt -c constraints.txt' >> setup_env.sh \
+    && echo 'pip3 install ipython' >> setup_env.sh \
+    && chmod +x setup_env.sh
 
 # Bare OS image to run the installed executables
 FROM docker.io/rockylinux:9
 
 COPY --from=builder /opt/software /opt/software
 COPY --from=builder /opt/view /opt/view
-COPY test_scripts /home/scripts
+COPY test_scripts   /home/scripts
 
 WORKDIR /home
 
@@ -88,11 +101,12 @@ ENV LD_LIBRARY_PATH="/opt/view/lib:/opt/view/lib64:/usr/local/lib:/usr/local/lib
 ENV PATH="/opt/view/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin"
 ENV MPICH_FC="/opt/view/bin/gfortran"
 ENV MPICH_CC="/opt/view/bin/gcc"
+ENV MPICH_CXX="/opt/view/bin/g++"
 
 RUN conda init bash && source /root/.bashrc 
 
 ENTRYPOINT [ "/bin/bash" ]
 
-LABEL version=3.
+LABEL version=3.11.9
 
 
