@@ -7,11 +7,8 @@ LABEL maintainer "Ciheim Brown"
 RUN apt update \
   && apt -y install uuid-runtime time csh python bc
 
-#RUN apt-get install bc
-
 RUN mkdir /opt/conda/cylc-flow-tools
 
-#CMD pwd 
 COPY ppp/cylc-flow-tools.yaml /opt/conda/cylc-flow-tools
 COPY ppp/macro.py /tmp
 
