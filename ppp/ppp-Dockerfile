@@ -7,10 +7,15 @@ LABEL maintainer "Ciheim Brown"
 RUN apt update \
   && apt -y install uuid-runtime time csh python bc
 
+#COPY ./postprocessing /mnt2
+RUN git clone --depth 1 https://gitlab.gfdl.noaa.gov/fre2/workflows/postprocessing.git /mnt2 
+COPY ./runscript.sh /exec/runscript.sh
+RUN chmod +x /exec/runscript.sh
+
 RUN mkdir /opt/conda/cylc-flow-tools
 
-COPY ppp/cylc-flow-tools.yaml /opt/conda/cylc-flow-tools
-COPY ppp/macro.py /tmp
+COPY cylc-flow-tools.yaml /opt/conda/cylc-flow-tools
+COPY macro.py /tmp
 
 # finding + replacing the problematic macro.py file with the corrected version
 RUN conda env create --file /opt/conda/cylc-flow-tools/cylc-flow-tools.yaml -p /opt/conda/cylc-flow-tools \
