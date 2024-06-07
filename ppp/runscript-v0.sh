@@ -3,6 +3,9 @@
 # Set environemnt variables 
 export TMPDIR=/mnt/temp HOME=/mnt CYLC_CONF_PATH=/mnt
 
+# Initialize ppp-setup
+mkdir -p /mnt/pp /mnt/ptmp /mnt/temp
+
 # Initializations for environment in container
 conda config --add envs_dirs /opt/conda
 conda init --all
@@ -17,13 +20,13 @@ conda activate /opt/conda/cylc-flow-tools
 
 # User input
 echo Please Enter Experiment Name:
-#read -r expname
+read -r expname
 
 echo Please Enter Platform:
-#read -r plat
+read -r plat
 
 echo Please Enter Target:
-#read -r targ
+read -r targ
 
 echo Please Enter Path to yaml file:
 read -r yamlfile
@@ -31,19 +34,20 @@ read -r yamlfile
 
 ##### FOR OWN DEBUGGIN PURPOSES #####
 # Usually user can input this since it varies per experiment - but for our debugging purposes, define here
-expname='am5_c96L65_amip'
-plat='gfdl.ncrc5-intel22-classic'
-targ='prod-openmp'
+#expname='am5_c96L65_amip'
+#plat='gfdl.ncrc5-intel22-classic'
+#targ='prod-openmp'
 #yamlfile="${HOME}/pp.yaml"
 ##### FOR OWN DEBUGGIN PURPOSES #####
 
 # Define name of pp run
 name=$expname"__"$plat"__"$targ
 
-# Create cylc-src directory (usually done with fre pp checkout - but gitlab has issues in cloud)
+# Create cylc-src directory if in cloud (usually done with fre pp checkout - but gitlab has issues in cloud)
 cylcsrcdir="/mnt/cylc-src"
 if [[ $(echo $(hostname)) == *cluster* ]]; then
     echo "host: $(hostname)"
+    echo "Creating cylc-src directory"
     if [ -d  $cylcsrcdir ]; then
         echo "CYLC-SRC directory exists. Removing"
         rm -rf $cylcsrcdir
@@ -57,6 +61,7 @@ if [[ $(echo $(hostname)) == *cluster* ]]; then
     fi
 else
     echo "host: $(hostname)"
+    echo "Using fre pp checkout tool"
     if [ -d  $cylcsrcdir ]; then
         echo "CYLC-SRC directory exists. Removing."
         rm -rf $cylcsrcdir
@@ -83,7 +88,9 @@ fre pp configure-yaml -e ${expname} -p ${plat} -t ${targ} -y ${yamlfile}
 if [ -d /mnt/cylc-run/${name} ]; then
     echo "${name} previously installed"
     rm -rf /mnt/cylc-run/${name}
-    # Check if there is a workflow running
+
+#TO-DO: examine if this is needed
+#    # Check if there is a workflow running
 #    cws=$(fre pp status -e ${expname} -p ${plat} -t ${targ})
 #    echo $cws
 #
@@ -96,6 +103,7 @@ if [ -d /mnt/cylc-run/${name} ]; then
 #    fi 
 #else
 #    echo "${name} not installed"
+
 fi
 
 # Install
@@ -103,12 +111,5 @@ fre pp install -e ${expname} -p ${plat} -t ${targ}
 
 # RUN
 #fre pp run -e ${expname} -p ${plat} -t ${targ}
-
+# Using this to see verbosity currently
 cylc play --no-detach --debug am5_c96L65_amip__gfdl.ncrc5-intel22-classic__prod-openmp 
-
-# POST CHECK
-#for i in {1..5}; do 
-#    count=$i
-#    fre pp status -e ${expname} -p ${plat} -t ${targ}
-#    sleep 10
-#done
