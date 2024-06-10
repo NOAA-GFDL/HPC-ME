@@ -12,7 +12,7 @@ RUN apt update \
 RUN git clone --depth 1 https://gitlab.gfdl.noaa.gov/fre2/workflows/postprocessing.git /mnt2 
 
 # Put runscript in container and make it executable
-COPY ppp/runscript-v0.sh /exec/runscript.sh
+COPY ppp/runscript.sh /exec/runscript.sh
 RUN chmod +x /exec/runscript.sh
 
 RUN mkdir /opt/conda/cylc-flow-tools

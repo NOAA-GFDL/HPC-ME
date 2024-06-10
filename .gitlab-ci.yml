@@ -45,7 +45,7 @@ stages:
 build-ppp:
   stage: build
   variables:
-    DOCKERFILE: ppp/ppp-Dockerfile-v0
+    DOCKERFILE: ppp/ppp-Dockerfile
     APP: "base"
     OS: ppp
     COMPILER_TYPE: none
