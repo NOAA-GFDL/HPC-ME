@@ -11,6 +11,8 @@ for p in ${paths[@]}; do
         rm -rf $p
         echo "Creating new $p"
         mkdir -p $p
+    else
+        mkdir -p $p
     fi
 done
 
