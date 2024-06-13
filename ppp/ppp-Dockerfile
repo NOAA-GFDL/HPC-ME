@@ -7,15 +7,20 @@ LABEL maintainer "Ciheim Brown"
 RUN apt update \
   && apt -y install uuid-runtime time csh python bc
 
-#RUN apt-get install bc
+# Put postprocessing repo into container
+#COPY ./postprocessing /mnt2
+RUN git clone --depth 1 https://gitlab.gfdl.noaa.gov/fre2/workflows/postprocessing.git /mnt2 
+
+# Put runscript in container and make it executable
+COPY ppp/runscript.sh /exec/runscript.sh
+RUN chmod +x /exec/runscript.sh
 
 RUN mkdir /opt/conda/cylc-flow-tools
 
-#CMD pwd 
 COPY ppp/cylc-flow-tools.yaml /opt/conda/cylc-flow-tools
 COPY ppp/macro.py /tmp
 
-# finding + replacing the problematic macro.py file with the corrected version
+# Finding + replacing the problematic macro.py file with the corrected version
 RUN conda env create --file /opt/conda/cylc-flow-tools/cylc-flow-tools.yaml -p /opt/conda/cylc-flow-tools \
   && /bin/bash -c 'export macro=$(find /opt/conda/cylc-flow-tools/lib -wholename */site-packages/metomi/rose) \
   && mv -f /tmp/macro.py $macro/macro.py' \
