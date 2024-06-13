@@ -7,10 +7,10 @@ export TMPDIR=/mnt/temp HOME=/mnt CYLC_CONF_PATH=/mnt
 paths=("/mnt/pp" "/mnt/ptmp" "/mnt/temp")
 for p in ${paths[@]}; do
     if [ -d $p ]; then
-        echo "$p previously created. Removing..."
+        echo "Path $p previously created. Removing...\n"
         rm -rf $p
-        echo "Creating $p"
-        mkdir -p /mnt/pp /mnt/ptmp /mnt/temp
+        echo "Creating new $p"
+        mkdir -p $p
     fi
 done
 
