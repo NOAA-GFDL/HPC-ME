@@ -4,7 +4,15 @@
 export TMPDIR=/mnt/temp HOME=/mnt CYLC_CONF_PATH=/mnt
 
 # Initialize ppp-setup
-mkdir -p /mnt/pp /mnt/ptmp /mnt/temp
+paths=("/mnt/pp" "/mnt/ptmp" "/mnt/temp")
+for p in ${paths[@]}; do
+    if [ -d $p ]; then
+        echo "$p previously created. Removing..."
+        rm -rf $p
+        echo "Creating $p"
+        mkdir -p /mnt/pp /mnt/ptmp /mnt/temp
+    fi
+done
 
 # Initializations for environment in container
 conda config --add envs_dirs /opt/conda
@@ -30,7 +38,6 @@ read -r targ
 
 echo Please Enter Path to yaml file:
 read -r yamlfile
-
 
 ##### FOR OWN DEBUGGIN PURPOSES #####
 # Usually user can input this since it varies per experiment - but for our debugging purposes, define here
