@@ -29,12 +29,4 @@ RUN . /spack/share/spack/setup-env.sh \
  && cmake .. -DCMAKE_Fortran_COMPILER="ifort" -DCMAKE_C_COMPILER="icc" \
  && make VERBOSE=1 \
  && make install
-# Create the run script
-RUN mkdir -p /apps \
- && touch /apps/run \
- && chmod 777 /apps/run \
- && echo '#/bin/bash' >> /apps/run \
- && echo '. /spack/share/spack/setup-env.sh' >> /apps/run \
- && echo '. /opt/spack-environment/loads' >> /apps/run \
- && echo '${1}'  >> /apps/run
 
