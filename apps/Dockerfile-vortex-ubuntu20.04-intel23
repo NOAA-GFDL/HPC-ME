@@ -27,7 +27,7 @@ RUN . /spack/share/spack/setup-env.sh \
  && git clone https://github.com/NOAA-GFDL/GFDL-VortexTracker.git && cd /apps/GFDL-VortexTracker/code/src \
  && mkdir -p build && cd build \
  && cmake .. -DCMAKE_Fortran_COMPILER="ifort" -DCMAKE_C_COMPILER="icc" \
- && make -j 8 VERBOSE=1 \
+ && make VERBOSE=1 \
  && make install
 # Create the run script
 RUN mkdir -p /apps \
