@@ -18,13 +18,12 @@
 # <http://www.gnu.org/licenses/>.
 #***********************************************************************
 # Build stage with Spack pre-installed and ready to be used
-FROM spack/rockylinux9:develop as builder
+FROM spack/rockylinux9:latest as builder
 
 
 # What we want to install and how we want to install it
 # is specified in a manifest file (spack.yaml)
-RUN mkdir -p /opt/spack-environment && \
-set -o noclobber \
+RUN mkdir /opt/spack-environment \
 &&  (echo spack: \
 &&   echo '  specs:' \
 &&   echo '  - gcc' \
@@ -77,7 +76,7 @@ RUN dnf update -y && dnf install -y epel-release && dnf update -y \
 
 # Install any needed pip packages
 RUN pip install git+https://github.com/adcroft/numpypi.git && \
-    pip install netCDF4 virtualenv
+    pip install netCDF4 virtualenv xarray
 # Set compilers for mpich wrappers
 ENV MPICH_FC=gfortran
 ENV MPICH_CC=gcc

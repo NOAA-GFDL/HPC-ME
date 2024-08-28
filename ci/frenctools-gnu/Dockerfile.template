@@ -25,7 +25,7 @@
 {{ super() }}
 # Install any needed pip packages
 RUN pip install git+https://github.com/adcroft/numpypi.git && \
-    pip install netCDF4 virtualenv
+    pip install netCDF4 virtualenv xarray
 # Set compilers for mpich wrappers
 ENV MPICH_FC=gfortran
 ENV MPICH_CC=gcc
