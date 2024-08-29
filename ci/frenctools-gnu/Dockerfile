@@ -18,12 +18,13 @@
 # <http://www.gnu.org/licenses/>.
 #***********************************************************************
 # Build stage with Spack pre-installed and ready to be used
-FROM spack/rockylinux9:latest as builder
+FROM spack/rockylinux9:develop AS builder
 
 
 # What we want to install and how we want to install it
 # is specified in a manifest file (spack.yaml)
-RUN mkdir /opt/spack-environment \
+RUN mkdir -p /opt/spack-environment && \
+set -o noclobber \
 &&  (echo spack: \
 &&   echo '  specs:' \
 &&   echo '  - gcc' \
