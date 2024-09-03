@@ -1,0 +1,28 @@
+to build 
+podman build -t gfdlsoftware:2024.01 -f Dockerfile-spack202401-gcc13.2
+  
+  
+  
+  
+  1006	11:32	cd HPC-ME/
+  1007	11:33	cd apps/
+  1013	11:47	which singularity
+  1014	11:47	which apptainer
+  1015	11:47	module av
+  1016	11:47	module laod singularity
+  1017	11:47	module load singularity
+  1018	11:47	singularity pull docker://rockylinux:8
+  1019	11:48	singularity pull docker://spack/rockylinux:8
+  1020	11:48	singularity pull docker://spack/rockylinux8:latest
+  1022	11:49	singularity run rockylinux8_latest.sif
+  1023	11:51	vi Dockerfile-spack202401-gcc13.2
+  1024	12:00	podman build -t gfdlsoftware:2024.01 -f Dockerfile-spack202401-gcc13.2
+  1025	12:00	git status
+  1026	12:00	git add Dockerfile-spack202401-gcc13.2
+  1027	12:01	git commit -m "Adds fre-nctools package.py with an error"
+  1028	12:01	git branch
+  1029	12:01	git push origin spack202401
+  1030	12:01	ls
+  1031	12:02	gedit building_spack_container.txt &
+  1032	12:02	history
+
