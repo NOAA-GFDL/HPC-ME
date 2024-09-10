@@ -48,7 +48,7 @@ spack:
     # labels for final image
     labels:
       maintainer: "Ryan Mulhall <Ryan.Mulhall@noaa.gov>"
-      copyright: "2024 GFDL"
+      copyright: "2021, 2022, 2023, 2024 GFDL"
       license: "LGPL v3+"
       gov.noaa.gfdl.version: "5.0.0"
       vendor: "Geophysical Fluid Dynamics Laboratory"
