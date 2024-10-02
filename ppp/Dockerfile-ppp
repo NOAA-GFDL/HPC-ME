@@ -1,0 +1,34 @@
+FROM condaforge/mambaforge:24.1.2-0
+LABEL maintainer "Ciheim Brown"
+
+## Description ##
+# condaforge is based on a stripped down ubuntu image.  We need some extra bits for frerun + fremake
+####
+
+# apt installs to /usr/bin/
+RUN apt update \
+  && apt -y install uuid-runtime time csh python bc 
+
+# Put runscript in container and make it executable
+COPY runscript.sh /exec/runscript.sh
+RUN chmod +x /exec/runscript.sh
+
+# Set up conda environment directory for cylc workflow
+RUN mkdir /opt/conda/cylc-flow-tools
+COPY cylc-flow-tools.yaml /opt/conda/cylc-flow-tools
+#COPY macro.py /tmp
+
+# Finding + replacing the problematic macro.py file with the corrected version
+RUN conda env create --file /opt/conda/cylc-flow-tools/cylc-flow-tools.yaml -p /opt/conda/cylc-flow-tools
+#  && /bin/bash -c 'export macro=$(find /opt/conda/cylc-flow-tools/lib -wholename */site-packages/metomi/rose) \
+#  && mv -f /tmp/macro.py $macro/macro.py' \
+#  && git config --global --add safe.directory /mnt2  
+
+RUN IFS="" \ 
+  && pv=$(python --version) \ 
+  && pv1=$(echo $pv | cut -d ' ' -f2) \ 
+  && conda config --add pkgs_dirs /opt/conda/cylc-flow-tools/lib/python$pv1/site-packages
+
+RUN conda install urwid==2.*
+
+ENTRYPOINT ["/bin/bash"]

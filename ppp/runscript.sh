@@ -1,22 +1,19 @@
 #!/bin/bash
 
-# Set environemnt variables 
-export TMPDIR=/mnt/temp HOME=/mnt CYLC_CONF_PATH=/mnt
+## TO-DO: 
+##    - automate rebuilding container when there is an update in fre-cli
+##    - checks for the status of the workflow (before installation step)
 
 # Initialize ppp-setup
-paths=("/mnt/pp" "/mnt/ptmp" "/mnt/temp")
-for p in ${paths[@]}; do
-    if [ -d $p ]; then
-        echo "Path $p previously created. Removing...\n"
-        rm -rf $p
-        echo "Creating new $p"
-        mkdir -p $p
-    else
-        mkdir -p $p
-    fi
-done
+# Set environment variables 
+export TMPDIR=/mnt/temp
+export HOME=/mnt
+export CYLC_CONF_PATH=/mnt
+###Not sure is this is needed 
+export HDF5_USE_FILE_LOCKING=FALSE
 
-# Initializations for environment in container
+### WHAT IS NEEDED ON THE CLOUD VS NOT for conda set-up
+# Initializations for conda environment in container
 conda config --add envs_dirs /opt/conda
 conda init --all
 source /opt/conda/etc/profile.d/conda.sh
@@ -24,101 +21,102 @@ source ~/.bashrc
 conda deactivate
 conda activate /opt/conda/cylc-flow-tools
 
-# Update fre-cli (if new container not built with updated version)
-## TO-DO?: automate rebuilding container when there is an updated fre-cli and updated pp repo version
-#conda update fre-cli
+function get_user_input {
+    # User input
+    echo Please Enter Experiment Name:
+    read -r expname
 
-# User input
-echo Please Enter Experiment Name:
-read -r expname
+    echo Please Enter Platform:
+    read -r plat
 
-echo Please Enter Platform:
-read -r plat
+    echo Please Enter Target:
+    read -r targ
 
-echo Please Enter Target:
-read -r targ
+    echo Please Enter Path to model yaml file:
+    read -r yamlfile
+}
 
-echo Please Enter Path to yaml file:
-read -r yamlfile
+function create_dirs {
+    # Create necessary paths used in workflow
+    paths=("/mnt/pp" "/mnt/ptmp" "/mnt/temp")
 
-##### FOR OWN DEBUGGIN PURPOSES #####
-# Usually user can input this since it varies per experiment - but for our debugging purposes, define here
-#expname='am5_c96L65_amip'
-#plat='gfdl.ncrc5-intel22-classic'
-#targ='prod-openmp'
-#yamlfile="${HOME}/pp.yaml"
-##### FOR OWN DEBUGGIN PURPOSES #####
+    for p in ${paths[@]}; do
+        if [ -d $p ]; then
+            echo -e "Path $p previously created. Removing..."
+            rm -rf $p
+            echo -e "   Creating new $p\n"
+            mkdir -p $p
+        else
+            mkdir -p $p
+        fi
+    done
+}
 
-# Define name of pp run
-name=$expname"__"$plat"__"$targ
+function fre_pp_steps {
+###### FRE-CLI STEPS ######
+    ## Checkout
+    echo -e "\nCreating $name directory in ${HOME}/cylc-src/${name} ...... "
 
-# Create cylc-src directory if in cloud (usually done with fre pp checkout - but gitlab has issues in cloud)
-cylcsrcdir="/mnt/cylc-src"
-if [[ $(echo $(hostname)) == *cluster* ]]; then
-    echo "host: $(hostname)"
-    echo "Creating cylc-src directory"
+    cylcsrcdir="/mnt/cylc-src"
     if [ -d  $cylcsrcdir ]; then
         echo "CYLC-SRC directory exists. Removing"
-        rm -rf $cylcsrcdir
+        rm -rf $cylcsrcdir/${name}
         mkdir -p $cylcsrcdir/${name}
-        # Copy contents of post-processing directory into cylc-src/name
-        cp -r /mnt2/. $cylcsrcdir/${name}
-    else
-        mkdir - $cylcsrcdir/${name}
-        # Copy contents of post-processing directory into cylc-src/name
-        cp -r /mnt2/. $cylcsrcdir/${name}
-    fi
-else
-    echo "host: $(hostname)"
-    echo "Using fre pp checkout tool"
-    if [ -d  $cylcsrcdir ]; then
-        echo "CYLC-SRC directory exists. Removing."
-        rm -rf $cylcsrcdir
         fre pp checkout -e ${expname} -p ${plat} -t ${targ}
     else
         fre pp checkout -e ${expname} -p ${plat} -t ${targ}
     fi
-fi
 
-##### FRE-CLI STEPS #####
-## Checkout 
-#fre pp checkout -e [exp] -p [plat] -t [targ] 
+    ## Configure the rose-suite and rose-app files for the workflow
+    echo -e "\nConfiguring the rose-suite and rose-app files ..."
+    fre pp configure-yaml -e ${expname} -p ${plat} -t ${targ} -y ${yamlfile}
 
-## SET-UP
-#Configure
-fre pp configure-yaml -e ${expname} -p ${plat} -t ${targ} -y ${yamlfile}
+    ## Validate the configuration files
+    echo -e "\nValidating rose-suite and rose-app configuration files for workflow ... "
+    fre pp validate -e ${expname} -p ${plat} -t ${targ} || echo "validate, no kill"
 
-# Validate
-# fre pp validate -e ${expname} -p ${plat} -t ${targ}
+    # Install
+    # experiment cleaned if previously installed
+    if [ -d /mnt/cylc-run/${name} ]; then
+        echo -e "\n${name} previously installed"
+        echo "   Removing ${name}... "
+        cylc clean ${name}
+    fi
 
-# Install
-# experiment installed if not previously installed
-# if installed - experiments is stopped, cleaned, and installed again
-if [ -d /mnt/cylc-run/${name} ]; then
-    echo "${name} previously installed"
-    rm -rf /mnt/cylc-run/${name}
+    echo -e "\nInstalling the workflow in ${HOME}/cylc-run/${name} ... "
+    fre pp install -e ${expname} -p ${plat} -t ${targ}
 
-#TO-DO: examine if this is needed
-#    # Check if there is a workflow running
-#    cws=$(fre pp status -e ${expname} -p ${plat} -t ${targ})
-#    echo $cws
-#
-#    # stop and clean running/failed/waiting experiment
-#    if [ ! -z "${cws}" ] && echo ${cws} | grep -q -e "running" -e "failed" -e "waiting" -e "submitted" ; then 
-#      cylc stop --now --now ${name}
-#      echo "${name} STOPPED"
-#      sleep 5
-#      cylc clean ${name}
-#    fi 
-#else
-#    echo "${name} not installed"
+    ## RUN
+    read -p "Would you like to see a verbose post-processing output? (y/n) (Default behavior is no):  " yn
+    echo -e "\nRunning the workflow ... "
 
-fi
+    case $yn in
+        [Yy] ) cylc play --no-detach --debug ${name}
+        ;;
 
-# Install
-fre pp install -e ${expname} -p ${plat} -t ${targ}
+        [Nn] ) fre pp run -e ${expname} -p ${plat} -t ${targ}
+        ;;
 
-# RUN
-#fre pp run -e ${expname} -p ${plat} -t ${targ}
-# Using this to see verbosity currently
-cylc play --no-detach --debug am5_c96L65_amip__gfdl.ncrc5-intel22-classic__prod-openmp 
+        * ) fre pp run -e ${expname} -p ${plat} -t ${targ}
+        ;;
+    esac
+}
+
+function main {
+    # Run set-up and fre-cli post-processing steps
+
+    # Set user-input
+    get_user_input
+
+    # Define name
+    name="$expname"__"$plat"__"$targ"
+
+    #Create directories needed for post-processing
+    create_dirs
+
+    # Run the post-processing steps
+    fre_pp_steps
+}
+
+# Run main function
+main
