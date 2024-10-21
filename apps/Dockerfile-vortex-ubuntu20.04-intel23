@@ -24,16 +24,9 @@ RUN . /spack/share/spack/setup-env.sh \
  && sed -i 's/module/spack/' /opt/spack-environment/loads \
  && . /opt/spack-environment/loads \
  && mkdir -p /apps && cd /apps \
- && git clone https://github.com/NOAA-GFDL/GFDL-VortexTracker.git && cd /apps/GFDL-VortexTracker/src \
+ && git clone https://github.com/NOAA-GFDL/GFDL-VortexTracker.git && cd /apps/GFDL-VortexTracker/code/src \
+ && mkdir -p build && cd build \
  && cmake .. -DCMAKE_Fortran_COMPILER="ifort" -DCMAKE_C_COMPILER="icc" \
- && make -j 8 VERBOSE=1 \
+ && make VERBOSE=1 \
  && make install
-# Create the run script
-RUN mkdir -p /apps \
- && touch /apps/run \
- && chmod 777 /apps/run \
- && echo '#/bin/bash' >> /apps/run \
- && echo '. /spack/share/spack/setup-env.sh' >> /apps/run \
- && echo '. /opt/spack-environment/loads' >> /apps/run \
- && echo '${1}'  >> /apps/run
 
