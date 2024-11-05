@@ -23,10 +23,6 @@
 # 1. download spack and source a setup script from spack/share
 # 2. cd into this directory
 # 3. `spack -e ./ containerize > Dockerfile`
-# 4. The generated dockerfile for this will need a slight modification when it strips the
-#    binaries since it gets snagged on miniconda's test directories, you'll need to add something like
-#    --exclude-dir=/opt/software/linux-rocky9-zen2/gcc-11.4.1/miniconda3-*/pkgs/packaging-24.1-py312h06a4308_0/info/test/tests/
-#    to the grep command that gets piped into strip. The exact path will change based on whats installed.
 spack:
   specs:
   - gcc
