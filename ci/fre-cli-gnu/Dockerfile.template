@@ -1,0 +1,42 @@
+#***********************************************************************
+#                   GNU Lesser General Public License
+#
+# This file is part of the GFDL FRE NetCDF tools package (FRE-NCTools).
+#
+# FRE-NCTools is free software: you can redistribute it and/or modify it under
+# the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or (at
+# your option) any later version.
+#
+# FRE-NCTools is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with FRE-NCTools.  If not, see
+# <http://www.gnu.org/licenses/>.
+#***********************************************************************
+{% extends "container/Dockerfile" %}
+{% block build_stage %}
+{{ super() }}
+{% endblock %}
+{% block final_stage %}
+{{ super() }}
+# set up conda
+RUN source /opt/spack-environment/activate.sh && \
+    conda init bash && \
+    source /root/.bashrc && \
+    echo "export CONDA=$(find /opt/software/linux-rocky9-zen2/ -name miniconda3* | head -n 1)" >> /root/.bashrc
+# Set compilers for mpich wrappers
+ENV MPICH_FC=gfortran
+ENV MPICH_CC=gcc
+# Set vars for spack install paths (needed since github workflows do not run entrypoint scripts)
+ENV PATH="/root/.local/bin:/root/bin:/opt/views/view/bin:/opt/spack/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ENV LD_LIBRARY_PATH="/opt/views/view/lib64:/opt/views/view/lib"
+ENV CFLAGS="-I/opt/views/view/include"
+ENV FCFLAGS="-I/opt/views/view/include"
+ENV LDFLAGS="-L/opt/views/view/lib"
+ENV CC=/opt/views/view/bin/mpicc
+ENV FC=/opt/views/view/bin/mpifort
+{% endblock %}
