@@ -79,6 +79,16 @@ build-ubuntu-intel:
     APP: "base"
     OS: ubuntu20.04
     COMPILER_TYPE: intel
-    COMPILER_VERSION: 2023
+    COMPILER_VERSION: 2024
+  <<: *buildScript
+
+build-ubuntu-intelrte:
+  stage: build
+  variables:
+    DOCKERFILE: Dockerfile-base-ubuntu20.04-intel2023
+    APP: "base"
+    OS: ubuntu20.04
+    COMPILER_TYPE: intel
+    COMPILER_VERSION: 2024rte
   <<: *buildScript
 

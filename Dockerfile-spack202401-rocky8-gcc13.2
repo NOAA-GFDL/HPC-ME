@@ -1,6 +1,8 @@
 # Build stage with Spack pre-installed and ready to be used
+#FROM spack/ubuntu-jammy:latest as builder
 FROM spack/rockylinux8:latest as builder
 
+#RUN dnf install 'dnf-command(config-manager)' && dnf --assumeyes config-manager -y --set-enabled powertools && yum -y install texinfo 
 RUN sed -i '60i \    depends_on("texinfo")' /opt/spack/var/spack/repos/builtin/packages/bison/package.py && cat /opt/spack/var/spack/repos/builtin/packages/bison/package.py
 
 RUN mkdir -p /opt/spack/var/spack/repos/custom/packages/fre-nctools && \ 
@@ -141,8 +143,96 @@ RUN . /opt/spack/share/spack/setup-env.sh && \
 RUN . /opt/spack/share/spack/setup-env.sh && \
    spack compiler remove gcc@13.2.0 &&\
    spack compiler remove gcc@8.5.0
+## New spack.yaml hack
+RUN mkdir -p /opt/spack-environment && \
+rm -rf /opt/spack-environment/spack.yaml && \
+set -o noclobber \
+&&  (echo spack: \
+&&   echo '  definitions:' \
+&&   echo '  - packages_builtin:' \
+&&   echo '    - gcc@13.2.0' \
+&&   echo '    - autoconf@2.69' \
+&&   echo '    - automake@1.16.5' \
+&&   echo '    - bacio@2.4.1' \
+&&   echo '    - bats@1.10.0' \
+&&   echo '    - cdo@2.2.2' \
+&&   echo '    - cloc@1.96.1' \
+&&   echo '    - cmake' \
+&&   echo '    - esmf@8.5.0' \
+&&   echo '    - g2@3.4.8' \
+&&   echo '    - g2tmpl@1.10.2' \
+&&   echo '    - gdal@3.7.3' \
+&&   echo '    - geos@3.12.0' \
+&&   echo '    - gh@2.32.1' \
+&&   echo '    - git@2.45.1' \
+&&   echo '    - git-lfs@3.3.0' \
+&&   echo '    - gnuplot@5.4.3' \
+&&   echo '    - grace@5.1.25' \
+&&   echo '    - gsl@2.7.1' \
+&&   echo '    - hdf5@1.14.3' \
+&&   echo '    - ip@3.3.3' \
+&&   echo '    - jasper@3.0.3' \
+&&   echo '    - libgeotiff@1.7.1' \
+&&   echo '    - libpng@1.6.39' \
+&&   echo '    - magics@4.9.3' \
+&&   echo '    - mpich@4.1.2' \
+&&   echo '    - nasm@2.15.05' \
+&&   echo '    - nccmp@1.9.1.0' \
+&&   echo '    - nco@5.1.6' \
+&&   echo '    - ncview@2.1.9' \
+&&   echo '    - netcdf-c@4.9.2' \
+&&   echo '    - netcdf-fortran@4.6.1' \
+&&   echo '    - octave@8.2.0' \
+&&   echo '    - openjdk@11.0.20.1_1' \
+&&   echo '    - parallel@20220522' \
+&&   echo '    - pigz@2.7' \
+&&   echo '    - proj@9.2.1' \
+&&   echo '    - sp@2.3.3' \
+&&   echo '    - tig@2.5.8' \
+&&   echo '    - udunits@2.2.28' \
+&&   echo '    - w3emc@2.11.0' \
+&&   echo '    - w3nco@2.4.1' \
+&&   echo '    - zlib' \
+&&   echo '    - zlib-ng@2.1.4' \
+&&   echo '  - packages_custom:' \
+&&   echo '    - fre-nctools@2023.01.02' \
+&&   echo '  packages:' \
+&&   echo '    cairo:' \
+&&   echo '      variants: +X' \
+&&   echo '    gdal:' \
+&&   echo '      variants: +netcdf' \
+&&   echo '    gnuplot:' \
+&&   echo '      variants: +X' \
+&&   echo '    hdf5:' \
+&&   echo '      variants: +fortran+hl+szip' \
+&&   echo '    libtiff:' \
+&&   echo '      variants: +zlib+jpeg+lzma' \
+&&   echo '    netcdf-c:' \
+&&   echo '      variants: +dap' \
+&&   echo '    pango:' \
+&&   echo '      variants: +X' \
+&&   echo '    all:' \
+&&   echo '      target: [x86_64]' \
+&&   echo '      providers:' \
+&&   echo '        mpi: [mpich]' \
+&&   echo '        zlib-api: [zlib-ng+compat, zlib]' \
+&&   echo '      compiler: [gcc@13.2.0]' \
+&&   echo '  specs:' \
+&&   echo '  - gcc@13.2.0 ' \
+&&   echo '  - matrix:' \
+&&   echo '    - [$packages_builtin, $packages_custom]' \
+&&   echo '  concretizer:' \
+&&   echo '    unify: true' \
+&&   echo '  config:' \
+#&&   echo '    install_missing_compilers: true' \
+&&   echo '    install_tree: /opt/software' \
+&&   echo '  repos:' \
+&&   echo '  - $spack/var/spack/repos/custom' \
+&&   echo '  - $spack/var/spack/repos/builtin' \
+&&   echo '  view: /opt/views/view') > /opt/spack-environment/spack.yaml
 # Install the software, remove unnecessary deps
-RUN . /opt/spack/share/spack/setup-env.sh && cd /opt/spack-environment && spack load /ca2stox && spack compiler add && spack --verbose env activate . && spack --verbose install --fail-fast && spack gc -y
+RUN . /opt/spack/share/spack/setup-env.sh && cd /opt/spack-environment && spack load gcc@13.2.0%gcc@13.2.0 && spack compiler add && spack --verbose env activate . && spack --verbose install --fail-fast && spack gc -y
+#RUN . /opt/spack/share/spack/setup-env.sh && cd /opt/spack-environment && spack --verbose env activate . && spack install --fail-fast && spack gc -y
 
 # Strip all the binaries
 RUN find -L /opt/views/view/* -type f -exec readlink -f '{}' \; | \
@@ -177,3 +267,4 @@ RUN { \
 #
 ENTRYPOINT [ "/entrypoint.sh" ]
 CMD [ "/bin/bash" ]
+
