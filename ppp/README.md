@@ -27,7 +27,7 @@ cd HPC-ME/ppp
 podman build -f Dockerfile-ppp -t 2024.01
 
 ## Save the image to a local tar file
-# It is recommended to name the container after the model name
+# It is recommended to name the container after the post-processing experiment name
 podman save -o [name of container].tar localhost/2024.01
 
 ## Create the singularity image file (sif) from the tar file
