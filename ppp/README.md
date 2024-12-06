@@ -50,7 +50,14 @@ If not on `Gaea`, history file and grid spec data should be transferred in the `
 Resources:
 1. The fre-workflows repository can be found here: https://github.com/NOAA-GFDL/fre-workflows
 2. The setup/output directory consists of a few subdirectories: pp, ptmp, and temp (these are created through the runscript.sh for the container) 
-3. Publicly available example yaml configuration files can be found here: https://github.com/NOAA-GFDL/fre-examples 
+3. Publicly available example yaml configuration files can be found here: https://github.com/NOAA-GFDL/fre-examples
+
+Regarding the yaml configurations, some paths need to be edited to reference the file location mounted inside the container. These include: 
+
+- `&GRID_SPEC96` "/mnt/[experimentname]_grid/[gridSpec file]
+- `history_dir`: "/mnt/history"
+- `pp_dir`: "/mnt/pp" 
+- `ptmp_dir`: "/mnt/ptmp"
 
 ## RUNNING 
 
