@@ -60,7 +60,7 @@ To run the container, follow these steps:
 ## Use apptainer or singularity to run
 # Make sure directories are writable
 # Bind in necessary locations (setup folder, workflow folder, data locations)
-apptainer exec --writable-tmpfs --bind [Path/to/setup/folder]:/mnt --bind [Path/to/fre-worflows]:/mnt2 --bind [Path/to/gridspec location]:/mnt/[experiment-name]_grid:ro --bind [Path/to/history/files]:/mnt/history:ro [Path/to/created/container] [Path/to/runscript]
+apptainer exec --writable-tmpfs --bind [Path/to/setup/folder]:/mnt --bind [Path/to/fre-worflows]:/mnt2 --bind [Path/to/gridspec location]:/mnt/[experiment-name]_grid:ro --bind [Path/to/history/files]:/mnt/history:ro [Path/to/created/container] /exec/runscript.sh
 ```
 
 Here,
