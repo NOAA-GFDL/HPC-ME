@@ -1,4 +1,3 @@
-###########################################
 # Post-Processing Container
 
 Previously, many GFDL workflows and configurations have only been accessible on gitlab. This is disadvantageous for outside collaboration, flexibility, community development. While the FRE workflow can now be conda installed, another deployment method of containerization has been developed. Containerzation of the FRE workflow at GFDL bolsters portability while also simplifying the environment set-up for the user. With the environment set-up done through the container build and runscript, this post-processing container work allows for more effective sharing of the workflow.
@@ -37,7 +36,7 @@ In order to run the post-processing workflow, two directories are needed: fre-wo
 Ensure you create the empty `ppp-setup` folder in an area with enough space as this is where the post-processing run output will be populated. 
 
 1. The fre-workflows repository can be found here: https://github.com/NOAA-GFDL/fre-workflows
-2. The setup/output directory consists of a few subdirectories: pp, ptmp, and temp (these are created through the runscript.sh) ############CHECK WE DONT HAVE TO EXPLICITLY MAKE THEM
+2. The setup/output directory consists of a few subdirectories: pp, ptmp, and temp (these are created through the runscript.sh) 
 3. Publicly available example yaml configuration files can be found here: https://github.com/NOAA-GFDL/fre-examples 
 
 ## RUNNING 
