@@ -15,7 +15,7 @@ Using podman and apptainer to build, follow these steps:
 git clone git@gitlab.gfdl.noaa.gov:fre/HPC-ME.git
 
 ## Navigate into the ppp folder
-cd ppp
+cd HPC-ME/ppp
 
 ## Build a container image
 podman build -f Dockerfile-ppp -t 2024.01
