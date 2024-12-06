@@ -6,7 +6,13 @@ Previously, many GFDL workflows and configurations have only been accessible on 
 
 **In order to build the container, the user needs to have podman access on gaea. If needed, put in a helpdesk ticket.**
 
-The Dockerfile-ppp in this repository, along with the cylc-flow-tools environment yaml and runscript.sh, can be used to build the container. The container will house the fre-cli tools and subtools, and any necessary packages needed for those tools.
+Files used to build container:
+
+- Dockerfile-ppp
+- cylc-flow-tools environment yaml
+- runscript.sh
+    
+The container will house the fre-cli tools and subtools, and any necessary packages needed for those tools.
 
 Using podman and apptainer to build, follow these steps:
 
