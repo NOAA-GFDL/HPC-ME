@@ -39,22 +39,30 @@ Now that the FRE workflows container is created, certain files and directories m
 
 In order to run the post-processing workflow, two directories are needed: 
 
-- fre-workflows cloned repository
-- directory including folders and files for container set-up and running (could be named `ppp-setup` for example) 
+- `fre-workflows` cloned repository
+- directory including folders and files for container set-up and running (could be named `ppp-setup` for example)  
+
+<ins>Data and Configuration files</ins>:
 
 Additionally, history files, grid spec files, and yaml configurations for the experiment run are needed. 
 
-Ensure you create the empty `ppp-setup` folder in an area with enough space as this is where the post-processing run output will be populated. 
+Ensure you create the empty `ppp-setup` folder in an area with enough space as this is where the post-processing run output will be populated.
 
-- if on **`Gaea`**, history files and grid spec files are usually available in a certain location. 
-    - Paths to the history folder and grid spec file are needed; they will be mounted into the container as read only folders/files 
+**If on Gaea**, history files and grid spec files are usually available in a certain location; retrieve their locations
+    
+- Paths to the history folder and grid spec file will be mounted into the container as read only folders/files 
 
-- if not on **`Gaea`**, history file and grid spec data should be transferred to the `ppp-setup` location in `ppp-setup/history/` and `ppp-setup/[experiment]_grid` for example
+**If not on Gaea**, history file and grid spec data should be transferred to the `ppp-setup` location in:
 
-Resources:
+- `ppp-setup/history/`
+- `ppp-setup/[experiment]_grid/`
+
+<ins>Resources</ins>:
 1. The fre-workflows repository can be found here: https://github.com/NOAA-GFDL/fre-workflows
 2. The setup/output directory consists of a few subdirectories: pp, ptmp, and temp (these are created through the runscript.sh for the container) 
 3. Publicly available example yaml configuration files can be found here: https://github.com/NOAA-GFDL/fre-examples
+
+<ins>Configuration Edits</ins>:
 
 Regarding the yaml configurations, some paths need to be edited to reference the file location mounted inside the container. These include: 
 
