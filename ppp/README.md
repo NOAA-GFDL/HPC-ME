@@ -53,7 +53,7 @@ In order to run the post-processing workflow, certain repositories and files are
 
 #### <ins>Data files
 
-Additionally, history files and grid spec files
+Additionally, history files and grid spec files are needed.
 
 **If on Gaea**, history files and grid spec files are usually available in a certain location; retrieve their locations
     
