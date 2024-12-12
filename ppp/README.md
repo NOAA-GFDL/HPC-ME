@@ -85,7 +85,7 @@ apptainer exec --writable-tmpfs --bind [Path/to/setup/folder]:/mnt --bind [Path/
 ```
 
 Here,
-- `--writable-tmpfs` allows files in the container to be editable, but temporarily (as long as the container is running); once the container stops running, changes are reverted (????)
+- `--writable-tmpfs` allows files in the container to be editable, but temporarily (as long as the container is running)
 - `--bind` mounts that  
 - `ro` refers to `read-only`, so that data files are not corrupted in any way. 
 
