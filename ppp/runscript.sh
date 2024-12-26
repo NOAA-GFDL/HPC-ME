@@ -1,16 +1,21 @@
 #!/bin/bash
 
+# stops script if a command fails
+set -e 
+
 ## TO-DO: 
 ##    - automate rebuilding container when there is an update in fre-cli
 ##    - checks for the status of the workflow (before installation step)
+##POTENTIAL IDEA:
+##    - could have multiple runscripts for tools so when you use container --> apptainer exec --writable-tmpfs --bind [any bind mounts where they need to go] [container] [certain  runscript for a tool]
+##    - runscript to do "fre make run-fremake [options]"
+##    - runscript to do "fre pp wrapper (or steps) [options]"
 
 # Initialize ppp-setup
 # Set environment variables 
 export TMPDIR=/mnt/temp
 export HOME=/mnt
 export CYLC_CONF_PATH=/mnt
-###Not sure is this is needed 
-export HDF5_USE_FILE_LOCKING=FALSE
 
 ### WHAT IS NEEDED ON THE CLOUD VS NOT for conda set-up
 # Initializations for conda environment in container
@@ -21,7 +26,7 @@ source ~/.bashrc
 conda deactivate
 conda activate /opt/conda/cylc-flow-tools
 
-function get_user_input {
+get_user_input () {
     # User input
     echo Please Enter Experiment Name:
     read -r expname
@@ -36,9 +41,9 @@ function get_user_input {
     read -r yamlfile
 }
 
-function create_dirs {
+create_dirs () {
     # Create necessary paths used in workflow
-    paths=("/mnt/pp" "/mnt/ptmp" "/mnt/temp")
+    paths=("${HOME}/pp" "${HOME}/ptmp" "${HOME}/temp")
 
     for p in ${paths[@]}; do
         if [ -d $p ]; then
@@ -52,20 +57,22 @@ function create_dirs {
     done
 }
 
-function fre_pp_steps {
+fre_pp_steps () {
 ###### FRE-CLI STEPS ######
+    # experiment cleaned if previously installed
+    if [ -d /mnt/cylc-run/${name} ]; then
+        echo -e "\n${name} previously installed"
+        echo "   Stopping and removing ${name}... "
+        cylc stop --now --now $name
+        sleep 5
+        cylc clean ${name}
+    fi
+
     ## Checkout
     echo -e "\nCreating $name directory in ${HOME}/cylc-src/${name} ...... "
 
-    cylcsrcdir="/mnt/cylc-src"
-    if [ -d  $cylcsrcdir ]; then
-        echo "CYLC-SRC directory exists. Removing"
-        rm -rf $cylcsrcdir/${name}
-        mkdir -p $cylcsrcdir/${name}
-        fre pp checkout -e ${expname} -p ${plat} -t ${targ}
-    else
-        fre pp checkout -e ${expname} -p ${plat} -t ${targ}
-    fi
+    ##checkout creates cylc-src if it doesn't exist in HOME 
+    fre pp checkout -e ${expname} -p ${plat} -t ${targ}
 
     ## Configure the rose-suite and rose-app files for the workflow
     echo -e "\nConfiguring the rose-suite and rose-app files ..."
@@ -76,13 +83,6 @@ function fre_pp_steps {
     fre pp validate -e ${expname} -p ${plat} -t ${targ} || echo "validate, no kill"
 
     # Install
-    # experiment cleaned if previously installed
-    if [ -d /mnt/cylc-run/${name} ]; then
-        echo -e "\n${name} previously installed"
-        echo "   Removing ${name}... "
-        cylc clean ${name}
-    fi
-
     echo -e "\nInstalling the workflow in ${HOME}/cylc-run/${name} ... "
     fre pp install -e ${expname} -p ${plat} -t ${targ}
 
@@ -102,15 +102,11 @@ function fre_pp_steps {
     esac
 }
 
-function main {
-    # Run set-up and fre-cli post-processing steps
+main () {
+    # Run set-up and fre-cli post-processing steps #
 
     # Set user-input
     get_user_input
-
-    # Define name
-    name="$expname"__"$plat"__"$targ"
-
     #Create directories needed for post-processing
     create_dirs
 
