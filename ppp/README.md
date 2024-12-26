@@ -24,7 +24,7 @@ git clone git@gitlab.gfdl.noaa.gov:fre/HPC-ME.git
 cd HPC-ME/ppp
 
 ## Build a container image
-podman build -f Dockerfile-ppp -t 2024.01
+podman build -f Dockerfile-ppp -t 2025
 
 ## Save the image to a local tar file
 # It is recommended to name the container after the post-processing experiment name
