@@ -28,7 +28,7 @@ podman build -f Dockerfile-ppp -t 2025
 
 ## Save the image to a local tar file
 # It is recommended to name the container after the post-processing experiment name
-podman save -o [name of container].tar localhost/2024.01
+podman save -o [name of container].tar localhost/2025
 
 ## Create the singularity image file (sif) from the tar file
 apptainer build --disable-cache [name of container].sif docker-archive://[name of container].tar
