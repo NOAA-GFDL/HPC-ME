@@ -52,26 +52,6 @@ build-ppp:
     COMPILER_VERSION: 1
   <<: *buildScript
 
-build-esm4-intel:
-  stage: build
-  variables:
-    DOCKERFILE: apps/Dockerfile-esm4-ubuntu20.04-intel2021.1.1
-    APP: esm4
-    OS: ubuntu20.04 
-    COMPILER_TYPE: intel
-    COMPILER_VERSION: 2022.1.1
-  <<: *buildScript
-
-build-am4-intel:
-  stage: build
-  variables:
-    DOCKERFILE: apps/Dockerfile-am4-ubuntu20.04-intel2021.1.1-2stage 
-    APP: am4
-    OS: ubuntu20.04
-    COMPILER_TYPE: intel
-    COMPILER_VERSION: 2022.1.1
-  <<: *buildScript
-
 build-ubuntu-intel:
   stage: build
   variables:
