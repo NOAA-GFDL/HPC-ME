@@ -149,7 +149,7 @@ FROM intel/oneapi-runtime:2024.2.1-0-devel-ubuntu20.04 as final
 COPY --from=builder /opt/software /opt/software
 COPY --from=builder /opt/views /opt/views
 # This will include the code and all of the build from the builder stage
-COPY --from=builder /apps/mom6_sis2_generic_4p_compile_symm_yaml
+COPY --from=builder /apps/mom6_sis2_generic_4p_compile_symm_yaml /apps/mom6_sis2_generic_4p_compile_symm_yaml
 ## Set up the run time environment
 ENV LD_LIBRARY_PATH /opt/views/view/lib:$LD_LIBRARY_PATH
 ENV LIBRARY_PATH /opt/views/view/lib:$LIBRARY_PATH
