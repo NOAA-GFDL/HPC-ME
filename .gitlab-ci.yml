@@ -55,7 +55,7 @@ build-ppp:
 build-ubuntu-cefi:
   stage: build
   variables:
-    DOCKERFILE: Dockerfile-cefi-ubuntu22.04-intel24
+    DOCKERFILE: apps/Dockerfile-cefi-ubuntu22.04-intel24
     APP: "cefi"
     OS: ubuntu22.04
     COMPILER_TYPE: intel
