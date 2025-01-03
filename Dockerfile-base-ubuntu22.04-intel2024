@@ -1,4 +1,4 @@
-FROM intel/hpckit:latest
+FROM intel/hpckit:2024.2.1-0-devel-ubuntu22.04 as builder
 
 ## Clone spack
 RUN mkdir -p /opt && cd /opt && git clone -b v0.22.2 https://github.com/spack/spack.git
@@ -57,6 +57,6 @@ RUN . /opt/spack/share/spack/setup-env.sh && cd /opt/spack-environment && spack 
 
 ENV LD_LIBRARY_PATH /opt/views/view/lib:$LD_LIBRARY_PATH
 ENV LIBRARY_PATH /opt/views/view/lib:$LIBRARY_PATH
-ENV PATH /opt/views/view/bin:$PATH
+ENV PATH $PATH:/opt/views/view/bin
 ENTRYPOINT [ "/bin/bash" ]
 
