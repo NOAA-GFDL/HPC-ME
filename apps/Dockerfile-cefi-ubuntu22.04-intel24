@@ -1,4 +1,4 @@
-FROM intel/hpckit:2024.2.1-0-devel-ubuntu20.04 as builder
+FROM intel/hpckit:2024.2.1-0-devel-ubuntu22.04 as builder
 ############ Set up build environment ############
 ## Clone spack
 RUN mkdir -p /opt && cd /opt && git clone -b v0.22.2 https://github.com/spack/spack.git
@@ -144,7 +144,7 @@ RUN mkdir -p /apps/mom6_sis2_generic_4p_compile_symm_yaml/exec \
 ## Use make to build the model
 RUN  cd /apps/mom6_sis2_generic_4p_compile_symm_yaml/exec && make -j 4 PROD=on 
 ############ Create the final stage of the container build ############
-FROM intel/oneapi-runtime:2024.2.1-0-devel-ubuntu20.04 as final
+FROM intel/oneapi-runtime:2024.2.1-0-devel-ubuntu22.04 as final
 ## copy libs and executable from builder
 COPY --from=builder /opt/software /opt/software
 COPY --from=builder /opt/views /opt/views
