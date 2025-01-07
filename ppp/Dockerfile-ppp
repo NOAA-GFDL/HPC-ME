@@ -6,8 +6,8 @@ LABEL maintainer "Ciheim Brown"
 ####
 
 # apt installs to /usr/bin/
-RUN apt update \
-  && apt -y install uuid-runtime time csh python bc 
+RUN apt-get update \
+  && apt-get -y install uuid-runtime time csh python bc 
 
 # Put runscript in container and make it executable
 COPY runscript.sh /exec/runscript.sh
