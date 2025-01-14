@@ -10,12 +10,12 @@ RUN apt update \
   && apt -y install uuid-runtime time csh python bc 
 
 # Put runscript in container and make it executable
-COPY runscript.sh /exec/runscript.sh
+COPY ppp/runscript.sh /exec/runscript.sh
 RUN chmod +x /exec/runscript.sh
 
 # Set up conda environment directory for cylc workflow
 RUN mkdir /opt/conda/cylc-flow-tools
-COPY cylc-flow-tools.yaml /opt/conda/cylc-flow-tools
+COPY ppp/cylc-flow-tools.yaml /opt/conda/cylc-flow-tools
 #COPY macro.py /tmp
 
 # Finding + replacing the problematic macro.py file with the corrected version
