@@ -31,7 +31,7 @@ default:
 variables:
   RUN_IMAGE: $CI_REGISTRY_IMAGE/$APP-$OS-$COMPILER_TYPE:$COMPILER_VERSION
   BUILD_IMAGE: $CI_REGISTRY_IMAGE/$APP-$OS-$COMPILER_TYPE-build:$COMPILER_VERSION
-  DOCKER_DRIVER: overlay2
+#  DOCKER_DRIVER: overlay2
   DOCKER_HOST: tcp://docker:2375
   DOCKER_TLS_CERTDIR: ""
   DOCKER_BUILDKIT: 1
@@ -52,26 +52,6 @@ build-ppp:
     COMPILER_VERSION: 1
   <<: *buildScript
 
-build-esm4-intel:
-  stage: build
-  variables:
-    DOCKERFILE: apps/Dockerfile-esm4-ubuntu20.04-intel2021.1.1
-    APP: esm4
-    OS: ubuntu20.04 
-    COMPILER_TYPE: intel
-    COMPILER_VERSION: 2022.1.1
-  <<: *buildScript
-
-build-am4-intel:
-  stage: build
-  variables:
-    DOCKERFILE: apps/Dockerfile-am4-ubuntu20.04-intel2021.1.1-2stage 
-    APP: am4
-    OS: ubuntu20.04
-    COMPILER_TYPE: intel
-    COMPILER_VERSION: 2022.1.1
-  <<: *buildScript
-
 build-ubuntu-intel:
   stage: build
   variables:
@@ -79,6 +59,16 @@ build-ubuntu-intel:
     APP: "base"
     OS: ubuntu20.04
     COMPILER_TYPE: intel
-    COMPILER_VERSION: 2023
+    COMPILER_VERSION: 2024
+  <<: *buildScript
+
+build-ubuntu-intelrte:
+  stage: build
+  variables:
+    DOCKERFILE: Dockerfile-base-ubuntu20.04-intel2023
+    APP: "base"
+    OS: ubuntu20.04
+    COMPILER_TYPE: intel
+    COMPILER_VERSION: 2024rte
   <<: *buildScript
 

@@ -1,0 +1,10 @@
+FROM docker-archive:hpc-me_intel2024.2.tar as builder
+
+FROM intel/oneapi-runtime:latest as final
+COPY --from=builder /opt/software /opt/software
+COPY --from=builder /opt/views /opt/views
+
+ENV LD_LIBRARY_PATH /opt/views/view/lib:$LD_LIBRARY_PATH
+ENV LIBRARY_PATH /opt/views/view/lib:$LIBRARY_PATH
+ENV PATH /opt/views/view/bin:$PATH
+ENTRYPOINT [ "/bin/bash" ]

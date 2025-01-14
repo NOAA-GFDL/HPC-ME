@@ -1,0 +1,270 @@
+# Build stage with Spack pre-installed and ready to be used
+#FROM spack/ubuntu-jammy:latest as builder
+FROM spack/rockylinux8:latest as builder
+
+#RUN dnf install 'dnf-command(config-manager)' && dnf --assumeyes config-manager -y --set-enabled powertools && yum -y install texinfo 
+RUN sed -i '60i \    depends_on("texinfo")' /opt/spack/var/spack/repos/builtin/packages/bison/package.py && cat /opt/spack/var/spack/repos/builtin/packages/bison/package.py
+
+RUN mkdir -p /opt/spack/var/spack/repos/custom/packages/fre-nctools && \ 
+set -o noclobber \
+&&  (echo '# Copyright 2013-2022 Lawrence Livermore National Security, LLC and other'\
+&&   echo '# Spack Project Developers. See the top-level COPYRIGHT file for details.'\
+&&   echo '# SPDX-License-Identifier: (Apache-2.0 OR MIT)'\
+&&   echo 'from spack import *'\
+&&   echo 'class FreNctools(AutotoolsPackage):'\
+&&   echo '    """FRE-NCtools is a collection of tools to help with the creation and manipulation of netCDF'\
+&&   echo '       files used for or written by the climate models developed at the Geophysical Fluid Dynaics'\
+&&   echo '       Laboratory (GFDL)."""'\
+&&   echo '    homepage = "https://github.com/NOAA-GFDL/FRE-NCtools"'\
+&&   echo '    git = "https://github.com/NOAA-GFDL/FRE-NCtools.git"'\
+&&   echo '    maintainers = ["underwoo", "ceblanton"]'\
+&&   echo '    version("2022.02", tag="2022.02")'\
+&&   echo '    version("2023.01", tag="2023.01")'\
+&&   echo '    version("2023.01.01", tag="2023.01.01")'\
+&&   echo '    version("2023.01.02", tag="2023.01.02")'\
+&&   echo '    version("2024.01", tag="2024.01")'\
+&&   echo '    version("2024.02", tag="2024.02")'\
+&&   echo '    variant("quad-precision", default=False, description="Enable higher (quad) precision")'\
+&&   echo '    variant("mpi", default=True, description="Enable MPI support")'\
+&&   echo '    depends_on("autoconf", type="build")'\
+&&   echo '    depends_on("automake", type="build")'\
+&&   echo '    depends_on("libtool", type="build")'\
+&&   echo '    depends_on("m4", type="build")'\
+&&   echo '    depends_on("netcdf-c~mpi", when="~mpi")'\
+&&   echo '    depends_on("netcdf-c+mpi", when="+mpi")'\
+&&   echo '    depends_on("netcdf-fortran")'\
+&&   echo '    depends_on("mpi", when="+mpi")'\
+&&   echo '    def configure_args(self):'\
+&&   echo '        args = self.enable_or_disable("quad-precision")'\
+&&   echo '        args += self.with_or_without("mpi")'\
+&&   echo '        return args' ) > /opt/spack/var/spack/repos/custom/packages/fre-nctools/package.py
+RUN mkdir -p /opt/spack/var/spack/repos/custom/packages/fre-nctools && \
+set -o noclobber \
+&&   (echo 'repo: '\
+&&   echo '  namespace: custom' ) > /opt/spack/var/spack/repos/custom/repo.yaml
+
+## Install gcc13.2.0
+
+
+# What we want to install and how we want to install it
+# is specified in a manifest file (spack.yaml)
+RUN mkdir -p /opt/spack-environment && \
+set -o noclobber \
+&&  (echo spack: \
+&&   echo '  definitions:' \
+&&   echo '  - packages_builtin:' \
+&&   echo '    - gcc@13.2.0' \
+&&   echo '    - autoconf@2.69' \
+&&   echo '    - automake@1.16.5' \
+&&   echo '    - bacio@2.4.1' \
+&&   echo '    - bats@1.10.0' \
+&&   echo '    - cdo@2.2.2' \
+&&   echo '    - cloc@1.96.1' \
+&&   echo '    - cmake' \
+&&   echo '    - esmf@8.5.0' \
+&&   echo '    - g2@3.4.8' \
+&&   echo '    - g2tmpl@1.10.2' \
+&&   echo '    - gdal@3.7.3' \
+&&   echo '    - geos@3.12.0' \
+&&   echo '    - gh@2.32.1' \
+&&   echo '    - git@2.42.0' \
+&&   echo '    - git-lfs@3.3.0' \
+&&   echo '    - gnuplot@5.4.3' \
+&&   echo '    - grace@5.1.25' \
+&&   echo '    - gsl@2.7.1' \
+&&   echo '    - hdf5@1.14.3' \
+&&   echo '    - ip@3.3.3' \
+&&   echo '    - jasper@3.0.3' \
+&&   echo '    - libgeotiff@1.7.1' \
+&&   echo '    - libpng@1.6.39' \
+&&   echo '    - magics@4.9.3' \
+&&   echo '    - mpich@4.1.2' \
+&&   echo '    - nasm@2.15.05' \
+&&   echo '    - nccmp@1.9.1.0' \
+&&   echo '    - nco@5.1.6' \
+&&   echo '    - ncview@2.1.9' \
+&&   echo '    - netcdf-c@4.9.2' \
+&&   echo '    - netcdf-fortran@4.6.1' \
+&&   echo '    - octave@8.2.0' \
+&&   echo '    - openjdk@11.0.20.1_1' \
+&&   echo '    - parallel@20220522' \
+&&   echo '    - pigz@2.7' \
+&&   echo '    - proj@9.2.1' \
+&&   echo '    - sp@2.3.3' \
+&&   echo '    - tig@2.5.8' \
+&&   echo '    - udunits@2.2.28' \
+&&   echo '    - w3emc@2.11.0' \
+&&   echo '    - w3nco@2.4.1' \
+&&   echo '    - zlib' \
+&&   echo '    - zlib-ng@2.1.4' \
+&&   echo '  - packages_custom:' \
+&&   echo '    - fre-nctools@2023.01.02' \
+&&   echo '  packages:' \
+&&   echo '    cairo:' \
+&&   echo '      variants: +X' \
+&&   echo '    gdal:' \
+&&   echo '      variants: +netcdf' \
+&&   echo '    gnuplot:' \
+&&   echo '      variants: +X' \
+&&   echo '    hdf5:' \
+&&   echo '      variants: +fortran+hl+szip' \
+&&   echo '    libtiff:' \
+&&   echo '      variants: +zlib+jpeg+lzma' \
+&&   echo '    netcdf-c:' \
+&&   echo '      variants: +dap' \
+&&   echo '    pango:' \
+&&   echo '      variants: +X' \
+&&   echo '    all:' \
+&&   echo '      target: [x86_64]' \
+&&   echo '      providers:' \
+&&   echo '        mpi: [mpich]' \
+&&   echo '        zlib-api: [zlib-ng+compat, zlib]' \
+&&   echo '      compiler: [gcc@13.2.0]' \
+&&   echo '  specs:' \
+&&   echo '  - gcc@13.2.0 ' \
+&&   echo '  - matrix:' \
+&&   echo '    - [$packages_builtin, $packages_custom]' \
+&&   echo '  concretizer:' \
+&&   echo '    unify: true' \
+&&   echo '  config:' \
+#&&   echo '    install_missing_compilers: true' \
+&&   echo '    install_tree: /opt/software' \
+&&   echo '  repos:' \
+&&   echo '  - $spack/var/spack/repos/custom' \
+&&   echo '  - $spack/var/spack/repos/builtin' \
+&&   echo '  view: /opt/views/view') > /opt/spack-environment/spack.yaml
+# Install gcc13
+RUN . /opt/spack/share/spack/setup-env.sh && \   
+   spack install gcc@13.2.0
+RUN . /opt/spack/share/spack/setup-env.sh && \
+   spack load gcc@13.2.0 && \
+   spack compiler add && \
+   spack install gcc@13.2.0%gcc@13.2.0
+RUN . /opt/spack/share/spack/setup-env.sh && \
+   spack compiler remove gcc@13.2.0 &&\
+   spack compiler remove gcc@8.5.0
+## New spack.yaml hack
+RUN mkdir -p /opt/spack-environment && \
+rm -rf /opt/spack-environment/spack.yaml && \
+set -o noclobber \
+&&  (echo spack: \
+&&   echo '  definitions:' \
+&&   echo '  - packages_builtin:' \
+&&   echo '    - gcc@13.2.0' \
+&&   echo '    - autoconf@2.69' \
+&&   echo '    - automake@1.16.5' \
+&&   echo '    - bacio@2.4.1' \
+&&   echo '    - bats@1.10.0' \
+&&   echo '    - cdo@2.2.2' \
+&&   echo '    - cloc@1.96.1' \
+&&   echo '    - cmake' \
+&&   echo '    - esmf@8.5.0' \
+&&   echo '    - g2@3.4.8' \
+&&   echo '    - g2tmpl@1.10.2' \
+&&   echo '    - gdal@3.7.3' \
+&&   echo '    - geos@3.12.0' \
+&&   echo '    - gh@2.32.1' \
+&&   echo '    - git@2.45.1' \
+&&   echo '    - git-lfs@3.3.0' \
+&&   echo '    - gnuplot@5.4.3' \
+&&   echo '    - grace@5.1.25' \
+&&   echo '    - gsl@2.7.1' \
+&&   echo '    - hdf5@1.14.3' \
+&&   echo '    - ip@3.3.3' \
+&&   echo '    - jasper@3.0.3' \
+&&   echo '    - libgeotiff@1.7.1' \
+&&   echo '    - libpng@1.6.39' \
+&&   echo '    - magics@4.9.3' \
+&&   echo '    - mpich@4.1.2' \
+&&   echo '    - nasm@2.15.05' \
+&&   echo '    - nccmp@1.9.1.0' \
+&&   echo '    - nco@5.1.6' \
+&&   echo '    - ncview@2.1.9' \
+&&   echo '    - netcdf-c@4.9.2' \
+&&   echo '    - netcdf-fortran@4.6.1' \
+&&   echo '    - octave@8.2.0' \
+&&   echo '    - openjdk@11.0.20.1_1' \
+&&   echo '    - parallel@20220522' \
+&&   echo '    - pigz@2.7' \
+&&   echo '    - proj@9.2.1' \
+&&   echo '    - sp@2.3.3' \
+&&   echo '    - tig@2.5.8' \
+&&   echo '    - udunits@2.2.28' \
+&&   echo '    - w3emc@2.11.0' \
+&&   echo '    - w3nco@2.4.1' \
+&&   echo '    - zlib' \
+&&   echo '    - zlib-ng@2.1.4' \
+&&   echo '  - packages_custom:' \
+&&   echo '    - fre-nctools@2023.01.02' \
+&&   echo '  packages:' \
+&&   echo '    cairo:' \
+&&   echo '      variants: +X' \
+&&   echo '    gdal:' \
+&&   echo '      variants: +netcdf' \
+&&   echo '    gnuplot:' \
+&&   echo '      variants: +X' \
+&&   echo '    hdf5:' \
+&&   echo '      variants: +fortran+hl+szip' \
+&&   echo '    libtiff:' \
+&&   echo '      variants: +zlib+jpeg+lzma' \
+&&   echo '    netcdf-c:' \
+&&   echo '      variants: +dap' \
+&&   echo '    pango:' \
+&&   echo '      variants: +X' \
+&&   echo '    all:' \
+&&   echo '      target: [x86_64]' \
+&&   echo '      providers:' \
+&&   echo '        mpi: [mpich]' \
+&&   echo '        zlib-api: [zlib-ng+compat, zlib]' \
+&&   echo '      compiler: [gcc@13.2.0]' \
+&&   echo '  specs:' \
+&&   echo '  - gcc@13.2.0 ' \
+&&   echo '  - matrix:' \
+&&   echo '    - [$packages_builtin, $packages_custom]' \
+&&   echo '  concretizer:' \
+&&   echo '    unify: true' \
+&&   echo '  config:' \
+#&&   echo '    install_missing_compilers: true' \
+&&   echo '    install_tree: /opt/software' \
+&&   echo '  repos:' \
+&&   echo '  - $spack/var/spack/repos/custom' \
+&&   echo '  - $spack/var/spack/repos/builtin' \
+&&   echo '  view: /opt/views/view') > /opt/spack-environment/spack.yaml
+# Install the software, remove unnecessary deps
+RUN . /opt/spack/share/spack/setup-env.sh && cd /opt/spack-environment && spack load gcc@13.2.0%gcc@13.2.0 && spack compiler add && spack --verbose env activate . && spack --verbose install --fail-fast && spack gc -y
+#RUN . /opt/spack/share/spack/setup-env.sh && cd /opt/spack-environment && spack --verbose env activate . && spack install --fail-fast && spack gc -y
+
+# Strip all the binaries
+RUN find -L /opt/views/view/* -type f -exec readlink -f '{}' \; | \
+    xargs file -i | \
+    grep 'charset=binary' | \
+    grep 'x-executable\|x-archive\|x-sharedlib' | \
+    awk -F: '{print $1}' | xargs strip
+
+# Modifications to the environment that are necessary to run
+RUN . /opt/spack/share/spack/setup-env.sh && \
+    cd /opt/spack-environment && \
+    spack env activate --sh -d . > activate.sh
+
+
+# Bare OS image to run the installed executables
+#FROM rockylinux:8.9
+#
+#COPY --from=builder /opt/spack-environment /opt/spack-environment
+#COPY --from=builder /opt/software /opt/software
+#
+## paths.view is a symlink, so copy the parent to avoid dereferencing and duplicating it
+#COPY --from=builder /opt/views /opt/views
+#
+RUN { \
+      echo '#!/bin/sh' \
+      && echo '.' /opt/spack-environment/activate.sh \
+      && echo 'exec "$@"'; \
+    } > /entrypoint.sh \
+&& chmod a+x /entrypoint.sh \
+&& ln -s /opt/views/view /opt/view
+#
+#
+ENTRYPOINT [ "/entrypoint.sh" ]
+CMD [ "/bin/bash" ]
+

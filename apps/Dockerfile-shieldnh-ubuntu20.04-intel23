@@ -1,0 +1,99 @@
+FROM ecpe4s/noaa-intel-prototype:2023.09.25 as builder 
+## Checkout the code
+RUN mkdir -p /apps/shield_nh/src \
+ && cd /apps/shield_nh/src \
+ && git clone --recursive --jobs=4 https://github.com/NOAA-GFDL/FMS.git -b 2023.02 FMS \
+ && git clone --recursive --jobs=4 https://github.com/NOAA-GFDL/SHiELD_physics.git -b main SHiELD_physics \
+ && mkdir -p fv3 \
+ && cd fv3 \
+ && git clone --recursive --jobs=4 https://github.com/NOAA-GFDL/GFDL_atmos_cubed_sphere.git -b main  \
+ && cd ..  \
+ && mkdir -p fv3 \
+ && cd fv3 \
+ && git clone --recursive --jobs=4 https://github.com/NOAA-GFDL/atmos_drivers.git -b main  \
+ && cd ..  \
+ && git clone --recursive --jobs=4 https://github.com/NOAA-GFDL/FMScoupler.git -b 2023.02 FMScoupler
+## Checkout the mkmf build system
+RUN cd /apps \ 
+ && git clone --recursive https://github.com/NOAA-GFDL/mkmf \ 
+ && cp mkmf/bin/* /usr/local/bin 
+## Create the main Makefile
+RUN mkdir -p /apps/shield_nh/exec \
+ && printf 'SRCROOT = /apps/shield_nh/src/\n' >> /apps/shield_nh/exec/Makefile \ 
+ && printf 'BUILDROOT = /apps/shield_nh/exec/\n' >> /apps/shield_nh/exec/Makefile \
+ && printf 'MK_TEMPLATE = /apps/mkmf/templates/hpcme-intel21.mk\n' >> /apps/shield_nh/exec/Makefile \ 
+ && printf 'LL =  -L/spack/opt/spack/linux-ubuntu20.04-x86_64/intel-2021.10.0/bacio-2.4.1-avjg7amdqfvudoootxtmobuqraxdmk3n/lib -lbacio_4 -L/spack/opt/spack/linux-ubuntu20.04-x86_64/intel-2021.10.0/bacio-2.4.1-avjg7amdqfvudoootxtmobuqraxdmk3n/lib -lbacio_8 -L/spack/opt/spack/linux-ubuntu20.04-x86_64/intel-2021.10.0/sp-2.3.3-4heawlyzj7twqp2kfm63e2k7fgg5ofc3/lib -lsp_d -L/spack/opt/spack/linux-ubuntu20.04-x86_64/intel-2021.10.0/w3emc-2.9.2-teoqwz2sictk2ms67pwrs43zgnqlu6xj/lib -lw3emc_d -L/spack/opt/spack/linux-ubuntu20.04-x86_64/intel-2021.10.0/w3nco-2.4.1-mzeyandoj2lvmq3xslg4xbyebxv6ffk7/lib -lw3nco_d\n' >> /apps/shield_nh/exec/Makefile \
+ && printf 'include $(MK_TEMPLATE)\n' >> /apps/shield_nh/exec/Makefile \ 
+ && printf 'shield_nh.x:  FMScoupler/libFMScoupler.a fv3/libfv3.a SHiELD_physics/libSHiELD_physics.a FMS/libFMS.a \n' >> /apps/shield_nh/exec/Makefile \ 
+ && printf '\t$(LD) $^ $(LL) $(LDFLAGS) -o $@ $(STATIC_LIBS)\n' >> /apps/shield_nh/exec/Makefile \ 
+ && printf 'FMScoupler/libFMScoupler.a:  FMS/libFMS.a SHiELD_physics/libSHiELD_physics.a fv3/libfv3.a  FORCE\n' >> /apps/shield_nh/exec/Makefile \ 
+ && printf '\t$(MAKE) SRCROOT=$(SRCROOT) BUILDROOT=$(BUILDROOT) MK_TEMPLATE=$(MK_TEMPLATE) --directory=FMScoupler $(@F)\n' >> /apps/shield_nh/exec/Makefile \ 
+ && printf 'fv3/libfv3.a:  FMS/libFMS.a SHiELD_physics/libSHiELD_physics.a  FORCE\n' >> /apps/shield_nh/exec/Makefile \ 
+ && printf '\t$(MAKE) SRCROOT=$(SRCROOT) BUILDROOT=$(BUILDROOT) MK_TEMPLATE=$(MK_TEMPLATE) --directory=fv3 $(@F)\n' >> /apps/shield_nh/exec/Makefile \ 
+ && printf 'SHiELD_physics/libSHiELD_physics.a:  FMS/libFMS.a  FORCE\n' >> /apps/shield_nh/exec/Makefile \ 
+ && printf '\t$(MAKE) SRCROOT=$(SRCROOT) BUILDROOT=$(BUILDROOT) MK_TEMPLATE=$(MK_TEMPLATE) --directory=SHiELD_physics $(@F)\n' >> /apps/shield_nh/exec/Makefile \ 
+ && printf 'FMS/libFMS.a:   FORCE\n' >> /apps/shield_nh/exec/Makefile \ 
+ && printf '\t$(MAKE) SRCROOT=$(SRCROOT) BUILDROOT=$(BUILDROOT) MK_TEMPLATE=$(MK_TEMPLATE) --directory=FMS $(@F)\n' >> /apps/shield_nh/exec/Makefile \ 
+ && printf 'FORCE:\n' >> /apps/shield_nh/exec/Makefile \ 
+ && printf 'localize:\n' >> /apps/shield_nh/exec/Makefile \ 
+ && printf '\t$(MAKE) -f $(BUILDROOT)FMS localize\n' >> /apps/shield_nh/exec/Makefile \ 
+ && printf '\t$(MAKE) -f $(BUILDROOT)SHiELD_physics localize\n' >> /apps/shield_nh/exec/Makefile \ 
+ && printf '\t$(MAKE) -f $(BUILDROOT)fv3 localize\n' >> /apps/shield_nh/exec/Makefile \ 
+ && chmod +rw /apps/shield_nh/exec/Makefile 
+## Run mkmf to create the Makefiles for the model componenets
+RUN bld_dir=/apps/shield_nh/exec \ 
+ && src_dir=/apps/shield_nh/src \ 
+ && mkmf_template=/apps/mkmf/templates/hpcme-intel23.mk \ 
+ && mkdir -p $bld_dir/FMS \ 
+ && list_paths -l -o $bld_dir/FMS/pathnames_FMS $src_dir/FMS  \ 
+ && cd $bld_dir/FMS \ 
+ && mkmf -m Makefile -a $src_dir -b $bld_dir -p libFMS.a -t $mkmf_template -c "-Duse_libMPI -Duse_netCDF -Duse_LARGEFILE -DHAVE_SCHED_GETAFFINITY -DINTERNAL_FILE_NML -DGFS_PHYS -DGFS_CONSTANTS -DHAVE_GETTID"  $bld_dir/FMS/pathnames_FMS 
+RUN bld_dir=/apps/shield_nh/exec \ 
+ && src_dir=/apps/shield_nh/src \ 
+ && mkmf_template=/apps/mkmf/templates/hpcme-intel23.mk \ 
+ && mkdir -p $bld_dir/SHiELD_physics \ 
+ && list_paths -l -o $bld_dir/SHiELD_physics/pathnames_SHiELD_physics $src_dir/SHiELD_physics/gsmphys $src_dir/SHiELD_physics/GFS_layer $src_dir/SHiELD_physics/IPD_layer  \ 
+ && cd $bld_dir/SHiELD_physics \ 
+ && mkmf -m Makefile -a $src_dir -b $bld_dir -p libSHiELD_physics.a -t $mkmf_template -c "-Duse_libMPI -Duse_netCDF -DHAVE_SCHED_GETAFFINITY -DSPMD -Duse_LARGEFILE -DGFS_PHYS -DUSE_GFSL63 -DNEW_TAUCTMAX -DNEMS_GSM -DINTERNAL_FILE_NML -DMOIST_CAPPA -DUSE_COND" -o "-I$bld_dir/FMS " -IFMS/fms2_io/include -IFMS/include -IFMS/mpp/include $bld_dir/SHiELD_physics/pathnames_SHiELD_physics 
+RUN bld_dir=/apps/shield_nh/exec \ 
+ && src_dir=/apps/shield_nh/src \ 
+ && mkmf_template=/apps/mkmf/templates/hpcme-intel23.mk \ 
+ && mkdir -p $bld_dir/fv3 \ 
+ && list_paths -l -o $bld_dir/fv3/pathnames_fv3 $src_dir/SHiELD_physics/FV3GFS/ $src_dir/fv3/atmos_drivers/SHiELD/atmos_model.F90 $src_dir/fv3/GFDL_atmos_cubed_sphere/driver/SHiELD/atmosphere.F90 $src_dir/fv3/GFDL_atmos_cubed_sphere/tools/ $src_dir/fv3/GFDL_atmos_cubed_sphere/model/ $src_dir/fv3/GFDL_atmos_cubed_sphere/GFDL_tools/fv_diag_column.F90  \ 
+ && cd $bld_dir/fv3 \ 
+ && mkmf -m Makefile -a $src_dir -b $bld_dir -p libfv3.a -t $mkmf_template -c "-Duse_libMPI -Duse_netCDF -DHAVE_SCHED_GETAFFINITY -DSPMD -Duse_LARGEFILE -DGFS_PHYS -DUSE_GFSL63 -DNEW_TAUCTMAX -DNEMS_GSM -DINTERNAL_FILE_NML -DMOIST_CAPPA -DUSE_COND" -o "-I$bld_dir/FMS -I$bld_dir/SHiELD_physics " -IFMS/fms2_io/include -IFMS/include -IFMS/mpp/include $bld_dir/fv3/pathnames_fv3 
+RUN bld_dir=/apps/shield_nh/exec \ 
+ && src_dir=/apps/shield_nh/src \ 
+ && mkmf_template=/apps/mkmf/templates/hpcme-intel23.mk \ 
+ && mkdir -p $bld_dir/FMScoupler \ 
+ && list_paths -l -o $bld_dir/FMScoupler/pathnames_FMScoupler $src_dir/FMScoupler/SHiELD/coupler_main.F90  \ 
+ && cd $bld_dir/FMScoupler \ 
+ && mkmf -m Makefile -a $src_dir -b $bld_dir -p libFMScoupler.a -t $mkmf_template -c "-Duse_libMPI -Duse_netCDF -DHAVE_SCHED_GETAFFINITY -DSPMD -Duse_LARGEFILE -DGFS_PHYS -DUSE_GFSL63 -DNEW_TAUCTMAX -DNEMS_GSM -DINTERNAL_FILE_NML -DMOIST_CAPPA -DUSE_COND" -o "-I$bld_dir/FMS -I$bld_dir/SHiELD_physics -I$bld_dir/fv3 " -IFMS/fms2_io/include -IFMS/include -IFMS/mpp/include $bld_dir/FMScoupler/pathnames_FMScoupler 
+## Compile the model
+RUN . /spack/share/spack/setup-env.sh \ 
+ && spack load libyaml \ 
+ && spack load netcdf-fortran@4.5.4 \ 
+ && spack load hdf5@1.14.0 \ 
+ && spack load bacio \ 
+ && spack load sp \ 
+ && spack load w3emc \ 
+ && spack load w3nco \ 
+ && cd /apps/shield_nh/exec && make -j 4 PROD=on
+## Create the run script to run the model
+RUN cd /apps/shield_nh/exec \
+ && printf '#!/bin/sh \n' >> /apps/shield_nh/exec/shield.sh \
+ && printf '# Set up spack loads\n' >> /apps/shield_nh/exec/shield.sh \
+ && printf '. /spack/share/spack/setup-env.sh\n' >> /apps/shield_nh/exec/shield.sh \
+ && printf '# Load spack packages\n' >> /apps/shield_nh/exec/shield.sh \
+ && printf 'spack load libyaml\n' >> /apps/shield_nh/exec/shield.sh \
+ && printf 'spack load netcdf-fortran@4.5.4\n' >> /apps/shield_nh/exec/shield.sh \
+ && printf 'spack load hdf5@1.14.0\n' >> /apps/shield_nh/exec/shield.sh \
+ && printf 'spack load bacio\n' >> /apps/shield_nh/exec/shield.sh \
+ && printf 'spack load sp\n' >> /apps/shield_nh/exec/shield.sh \
+ && printf 'spack load w3emc\n' >> /apps/shield_nh/exec/shield.sh \
+ && printf 'spack load w3nco\n' >> /apps/shield_nh/exec/shield.sh \
+ && printf '# Run executable\n' >> /apps/shield_nh/exec/shield.sh \
+ && printf '/apps/shield_nh/exec/shield_nh.x\n' >> /apps/shield_nh/exec/shield.sh \
+ && chmod 777 /apps/shield_nh/exec/shield.sh
+## Create the executable entry point
+ENTRYPOINT ["/bin/bash"]
