@@ -1,5 +1,5 @@
-FROM condaforge/mambaforge:24.1.2-0
-LABEL maintainer "Ciheim Brown"
+FROM condaforge/mambaforge:24.1.2-0 as builder
+#LABEL maintainer "Ciheim Brown"
 
 ## Description ##
 # condaforge is based on a stripped down ubuntu image.  We need some extra bits for frerun + fremake
