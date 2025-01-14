@@ -66,6 +66,8 @@ Additionally, history files and grid spec files are needed.
 
 FOR CLOUD USERS: Preparing for cloud usage requires history files and container image/runscript to be transferred to the cloud resource. The recommended method of file transfer is with Globus in which files should be transferred to the cloud resource’s lustre folder. 
 
+Refer to globus documentation here: [Globus Online Data Transfer](https://docs.rdhpcs.noaa.gov/data/globus_online_data_transfer.html)
+
 #### <ins>Configuration Edits
 
 Regarding the yaml configurations, some paths need to be edited to reference the file location mounted inside the container. These include: 
