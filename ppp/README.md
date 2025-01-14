@@ -64,6 +64,8 @@ Additionally, history files and grid spec files are needed.
 - `ppp-setup/history/`
 - `ppp-setup/[experiment]_grid/`
 
+FOR CLOUD USERS: Preparing for cloud usage requires history files and container image/runscript to be transferred to the cloud resource. The recommended method of file transfer is with Globus in which files should be transferred to the cloud resource’s lustre folder. 
+
 #### <ins>Configuration Edits
 
 Regarding the yaml configurations, some paths need to be edited to reference the file location mounted inside the container. These include: 
@@ -83,6 +85,7 @@ To run the container, follow these steps:
 # Bind in necessary locations (setup folder, workflow folder, data locations)
 apptainer exec --writable-tmpfs --bind [Path/to/setup/folder]:/mnt --bind [Path/to/fre-worflows]:/mnt2 --bind [Path/to/gridspec location]:/mnt/[experiment-name]_grid:ro --bind [Path/to/history/files]:/mnt/history:ro [Path/to/created/container] /exec/runscript.sh
 ```
+NOTE: It is essential that binding is done correctly as the container’s runscript relies heavily on these paths.
 
 Here,
 - `--writable-tmpfs` allows files in the container to be editable, but temporarily (as long as the container is running)
