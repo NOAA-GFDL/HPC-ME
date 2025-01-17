@@ -1,4 +1,4 @@
-FROM condaforge/mambaforge:24.1.2-0 as builder
+FROM condaforge/mambaforge:24.9.2-0 as builder
 #LABEL maintainer "Ciheim Brown"
 
 ## Description ##
@@ -6,8 +6,8 @@ FROM condaforge/mambaforge:24.1.2-0 as builder
 ####
 
 # apt installs to /usr/bin/
-RUN apt-get update \
-  && apt-get -y install uuid-runtime time csh python bc 
+RUN apt update \
+  && apt -y install uuid-runtime time csh python bc 
 
 # Put runscript in container and make it executable
 COPY ppp/runscript.sh /exec/runscript.sh
