@@ -5,6 +5,8 @@ FROM condaforge/mambaforge:24.1.2-0 as builder
 # condaforge is based on a stripped down ubuntu image.  We need some extra bits for frerun + fremake
 ####
 
+RUN sed -i 's/http/https/g' /etc/apt/sources.list
+
 # apt installs to /usr/bin/
 RUN apt update \
   && apt -y install uuid-runtime time csh python bc 
