@@ -11,6 +11,6 @@ dependencies:
   - rsync
   - make
   - vim
-  - fre-cli
+  - fre-cli ==2025.01
 #  - hdf5
   - fre-python-tools 
