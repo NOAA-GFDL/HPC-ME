@@ -1,4 +1,4 @@
-FROM condaforge/mambaforge:24.1.2-0 as builder
+FROM condaforge/mambaforge:24.9.2-0 as builder
 #LABEL maintainer "Ciheim Brown"
 
 ## Description ##
