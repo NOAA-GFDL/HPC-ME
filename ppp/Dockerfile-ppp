@@ -21,6 +21,9 @@ RUN mkdir /opt/conda/cylc-flow-tools
 COPY ppp/cylc-flow-tools.yaml /opt/conda/cylc-flow-tools
 #COPY macro.py /tmp
 
+# Remove conda environment if it exists 
+RUN conda remove -n cylc-flow-tools --all
+
 # Finding + replacing the problematic macro.py file with the corrected version
 RUN conda env create --file /opt/conda/cylc-flow-tools/cylc-flow-tools.yaml -p /opt/conda/cylc-flow-tools
 #  && /bin/bash -c 'export macro=$(find /opt/conda/cylc-flow-tools/lib -wholename */site-packages/metomi/rose) \
