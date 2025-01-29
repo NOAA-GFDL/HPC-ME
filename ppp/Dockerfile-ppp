@@ -19,6 +19,7 @@ RUN chmod +x /app/exec/runscript.sh
 # Set up conda environment directory for cylc workflow
 #RUN mkdir /opt/conda/cylc-flow-tools
 COPY ppp/cylc-flow-tools.yaml /app/cylc-flow-tools
+RUN ls /app/cylc-flow-tools
 #COPY macro.py /tmp
 
 # Finding + replacing the problematic macro.py file with the corrected version
