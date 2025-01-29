@@ -19,11 +19,10 @@ RUN chmod +x /app/exec/runscript.sh
 # Set up conda environment directory for cylc workflow
 #RUN mkdir /opt/conda/cylc-flow-tools
 COPY ppp/cylc-flow-tools.yaml /app/cylc-flow-tools
-RUN ls /app/cylc-flow-tools
 #COPY macro.py /tmp
 
 # Finding + replacing the problematic macro.py file with the corrected version
-RUN conda env create --file /app/cylc-flow-tools/cylc-flow-tools.yaml -p /opt/conda/cylc-flow-tools
+RUN conda env create --file /app/cylc-flow-tools/cylc-flow-tools.yaml -p /app/cylc-flow-tools
 #  && /bin/bash -c 'export macro=$(find /opt/conda/cylc-flow-tools/lib -wholename */site-packages/metomi/rose) \
 #  && mv -f /tmp/macro.py $macro/macro.py' \
 #  && git config --global --add safe.directory /mnt2  
