@@ -1,9 +1,11 @@
 FROM condaforge/mambaforge:24.9.2-0 as builder
 #LABEL maintainer "Ciheim Brown"
-
 ## Description ##
 # condaforge is based on a stripped down ubuntu image.  We need some extra bits for frerun + fremake
 ####
+
+# Set where the conda installation goes
+ARG conda_location=/app/cylc-flow-tools
 
 # Change to encrypted HTTP
 RUN sed -i 's/http/https/g' /etc/apt/sources.list
@@ -12,20 +14,23 @@ RUN sed -i 's/http/https/g' /etc/apt/sources.list
 RUN apt update \
   && apt -y install uuid-runtime time csh python bc 
 
-# Put runscript in container and make it executable
+# Update conda because this build container may be stale.
+RUN conda update -n base -c conda-forge conda
+
+# Copy runscript in container and make it executable
 COPY ppp/runscript.sh /app/exec/runscript.sh
 RUN chmod +x /app/exec/runscript.sh
 
 # Set up conda environment directory for cylc workflow
-#RUN mkdir /opt/conda/cylc-flow-tools
-COPY ppp/cylc-flow-tools.yaml /app/cylc-flow-tools
-#COPY macro.py /tmp
+COPY ppp/cylc-flow-tools.yaml ${conda_location}/cylc-flow-tools.yaml
+RUN mamba env create --file ${conda_location}/cylc-flow-tools.yaml -p ${conda_location}
 
 # Finding + replacing the problematic macro.py file with the corrected version
-RUN conda env create --file /app/cylc-flow-tools/cylc-flow-tools.yaml -p /app/cylc-flow-tools
-#  && /bin/bash -c 'export macro=$(find /opt/conda/cylc-flow-tools/lib -wholename */site-packages/metomi/rose) \
-#  && mv -f /tmp/macro.py $macro/macro.py' \
-#  && git config --global --add safe.directory /mnt2  
+#COPY macro.py /tmp
+#RUN /bin/bash -c 'cp /tmp/macro.py $(find ${conda_location}/ -name macro.py -print | grep metomi)'
+
+# Maybe perhaps tag an external mounted volume /mnt2 as being safe...
+# RUN git config --global --add safe.directory /mnt2
 
 RUN IFS="" \ 
   && pv=$(python --version) \ 
