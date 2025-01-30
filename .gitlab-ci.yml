@@ -55,20 +55,20 @@ build-ppp:
 build-ubuntu-intel:
   stage: build
   variables:
-    DOCKERFILE: Dockerfile-base-ubuntu20.04-intel2023 
+    DOCKERFILE: Dockerfile-base-ubuntu24.04-intel2025 
     APP: "base"
-    OS: ubuntu20.04
+    OS: ubuntu24.04
     COMPILER_TYPE: intel
-    COMPILER_VERSION: 2024
+    COMPILER_VERSION: 2025
   <<: *buildScript
 
 build-ubuntu-intelrte:
   stage: build
   variables:
-    DOCKERFILE: Dockerfile-base-ubuntu20.04-intel2023
+    DOCKERFILE: Dockerfile-base-ubuntu24.04-intel2025
     APP: "base"
-    OS: ubuntu20.04
+    OS: ubuntu24.04
     COMPILER_TYPE: intel
-    COMPILER_VERSION: 2024rte
+    COMPILER_VERSION: 2025rte
   <<: *buildScript
 
