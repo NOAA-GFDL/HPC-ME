@@ -12,7 +12,7 @@ set -o noclobber \
 &&   echo '  definitions:' \
 &&   echo '  - packages_builtin:' \
 &&   echo '    - bacio%oneapi@2025.0.4' \
-&&   echo '    - hdf5@1.14.3%oneapi@2025.0.4' \
+&&   echo '    - hdf5@1.14.5%oneapi@2025.0.4' \
 &&   echo '    - ip%oneapi@2025.0.4' \
 &&   echo '    - libyaml@0.2.5%oneapi@2025.0.4' \
 &&   echo '    - nccmp@1.9.1.0%oneapi@2025.0.4' \
@@ -50,8 +50,7 @@ set -o noclobber \
 &&   echo '  config:' \
 &&   echo '    install_tree: /opt/software' \
 &&   echo '  view: /opt/views/view') > /opt/spack-environment/spack.yaml
-# Install the software, remove unnecessary deps
-RUN . /opt/spack/share/spack/setup-env.sh && cd /opt/spack-environment && spack compiler add 
+# Install the software, remove unnecessary deps 
 RUN . /opt/spack/share/spack/setup-env.sh && cd /opt/spack-environment && spack compiler add && spack --verbose env activate . && spack --verbose install --fail-fast && spack gc -y
 
 ENV LD_LIBRARY_PATH /opt/views/view/lib:$LD_LIBRARY_PATH
