@@ -64,7 +64,6 @@ spack:
       - autoconf
       - libtool
       - make
-      - bats
       - git
       - libgomp
       - python3
@@ -72,4 +71,5 @@ spack:
       - python3-pip
       - python3-pytest
       - perl
+      - asciidoc 
 
