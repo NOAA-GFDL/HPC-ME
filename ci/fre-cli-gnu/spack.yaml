@@ -48,11 +48,11 @@ spack:
     # labels for final image
     labels:
       maintainer: "Ryan Mulhall <Ryan.Mulhall@noaa.gov>"
-      copyright: "2021, 2022, 2023, 2024 GFDL"
+      copyright: "2024, 2025 GFDL"
       license: "LGPL v3+"
-      gov.noaa.gfdl.version: "5.0.0"
+      gov.noaa.gfdl.version: "1.1.0"
       vendor: "Geophysical Fluid Dynamics Laboratory"
-      gov.noaa.gfdl.release-date: "2024-07-29"
+      gov.noaa.gfdl.release-date: "2025-02-18"
     strip: false # conda doesn't like when you strip the binaries 
     # Additional packages that are needed at (ci) runtime
     # this is anything that doesn't need to be built from source
@@ -68,4 +68,5 @@ spack:
       - apptainer
       - podman
       - which
+      - fusefs
 

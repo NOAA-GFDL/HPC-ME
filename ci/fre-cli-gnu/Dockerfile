@@ -17,6 +17,9 @@
 # License along with FRE-NCTools.  If not, see
 # <http://www.gnu.org/licenses/>.
 #***********************************************************************
+# Image for fre-cli github CI testing
+# contains miniconda and build dependencies for FMS-based models
+# also includes podman and the fusefs packages for container builds
 # Build stage with Spack pre-installed and ready to be used
 FROM spack/rockylinux9:develop AS builder
 
@@ -72,7 +75,7 @@ RUN { \
 
 
 RUN dnf update -y && dnf install -y epel-release && dnf update -y \
- && dnf install -y autoconf libtool make git libgomp perl apptainer podman which \
+ && dnf install -y autoconf libtool make git libgomp perl apptainer podman which fusefs \
  && rm -rf /var/cache/dnf && dnf clean all
 
 # set up conda
@@ -92,11 +95,11 @@ ENV LDFLAGS="-L/opt/views/view/lib"
 ENV CC=/opt/views/view/bin/mpicc
 ENV FC=/opt/views/view/bin/mpifort
 LABEL "maintainer"="Ryan Mulhall <Ryan.Mulhall@noaa.gov>"
-LABEL "copyright"="2024 GFDL"
+LABEL "copyright"="2024, 2025 GFDL"
 LABEL "license"="LGPL v3+"
-LABEL "gov.noaa.gfdl.version"="5.0.0"
+LABEL "gov.noaa.gfdl.version"="1.1.0"
 LABEL "vendor"="Geophysical Fluid Dynamics Laboratory"
-LABEL "gov.noaa.gfdl.release-date"="2024-07-29"
+LABEL "gov.noaa.gfdl.release-date"="2025-02-18"
 ENTRYPOINT [ "/entrypoint.sh" ]
 CMD [ "/bin/bash" ]
 
