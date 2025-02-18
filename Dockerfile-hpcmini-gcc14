@@ -1,0 +1,2 @@
+FROM alpine:3.21
+RUN apk add --no-cache coreutils gcc gfortran git openmp make netcdf-dev netcdf-fortran-dev openmpi-dev yaml zlib perl musl-dev openssh 
