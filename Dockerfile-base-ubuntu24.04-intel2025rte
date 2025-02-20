@@ -1,0 +1,13 @@
+FROM docker-archive:base-ubuntu24-intel2025.tar as builder
+
+FROM intel/oneapi-runtime:latest as final
+##Copy libraries from builder
+COPY --from=builder /opt/software /opt/software
+COPY --from=builder /opt/views /opt/views
+
+##Set up runtime env
+ENV LD_LIBRARY_PATH /opt/views/view/lib:$LD_LIBRARY_PATH
+ENV LIBRARY_PATH /opt/views/view/lib:$LIBRARY_PATH
+ENV PATH /opt/views/view/bin:$PATH
+ENTRYPOINT [ "/bin/bash" ]
+

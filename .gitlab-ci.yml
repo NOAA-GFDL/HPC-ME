@@ -45,7 +45,7 @@ stages:
 build-ppp:
   stage: build
   variables:
-    DOCKERFILE: ppp/ppp-Dockerfile
+    DOCKERFILE: ppp/Dockerfile-ppp
     APP: "base"
     OS: ppp
     COMPILER_TYPE: none
@@ -66,20 +66,20 @@ build-ubuntu-cefi:
 build-ubuntu-intel:
   stage: build
   variables:
-    DOCKERFILE: Dockerfile-base-ubuntu22.04-intel2024 
+    DOCKERFILE: Dockerfile-base-ubuntu24.04-intel2025 
     APP: "base"
-    OS: ubuntu22.04
+    OS: ubuntu24.04
     COMPILER_TYPE: intel
-    COMPILER_VERSION: 2024
+    COMPILER_VERSION: 2025
   <<: *buildScript
 
 build-ubuntu-intelrte:
   stage: build
   variables:
-    DOCKERFILE: Dockerfile-base-ubuntu22.04-intel2024
+    DOCKERFILE: Dockerfile-base-ubuntu24.04-intel2025
     APP: "base"
-    OS: ubuntu22.04
+    OS: ubuntu24.04
     COMPILER_TYPE: intel
-    COMPILER_VERSION: 2024rte
+    COMPILER_VERSION: 2025rte
   <<: *buildScript
 
