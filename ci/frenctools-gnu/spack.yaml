@@ -30,6 +30,7 @@ spack:
   - netcdf-c
   - netcdf-fortran
   - nccmp
+  - asciidoc
   concretizer:
     unify: true
   packages:
@@ -71,5 +72,5 @@ spack:
       - python3-pip
       - python3-pytest
       - perl
-      - asciidoc 
+      - nco
 

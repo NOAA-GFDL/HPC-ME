@@ -97,9 +97,9 @@ ENV FC=/opt/views/view/bin/mpifort
 LABEL "maintainer"="Ryan Mulhall <Ryan.Mulhall@noaa.gov>"
 LABEL "copyright"="2024, 2025 GFDL"
 LABEL "license"="LGPL v3+"
-LABEL "gov.noaa.gfdl.version"="1.1.0"
+LABEL "gov.noaa.gfdl.version"="5.0.0"
 LABEL "vendor"="Geophysical Fluid Dynamics Laboratory"
-LABEL "gov.noaa.gfdl.release-date"="2025-02-18"
+LABEL "gov.noaa.gfdl.release-date"="2024-07-29"
 ENTRYPOINT [ "/entrypoint.sh" ]
 CMD [ "/bin/bash" ]
 
