@@ -52,6 +52,17 @@ build-ppp:
     COMPILER_VERSION: 1
   <<: *buildScript
 
+build-ubuntu-cefi:
+  stage: build
+  variables:
+    DOCKERFILE: apps/Dockerfile-cefi-ubuntu22.04-intel24
+    APP: "cefi"
+    OS: ubuntu22.04
+    COMPILER_TYPE: intel
+    COMPILER_VERSION: 24
+  <<: *buildScript
+
+
 build-ubuntu-intel:
   stage: build
   variables:
