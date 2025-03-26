@@ -1,5 +1,5 @@
 # Use rocm container with amdflang/clang 18.0.0
-FROM rocm/dev-ubuntu-24.04:6.3.4-complete
+FROM rocm/dev-ubuntu-24.04:6.3.4-complete as builder
 # Set up the environment for the compilers
 ENV PYTHONPATH /opt/rocm-6.3.4/:/opt/rocm-6.3.4/:
 ENV CMAKE_PREFIX_PATH /opt/rocm-6.3.4:/opt/rocm-6.3.4:
