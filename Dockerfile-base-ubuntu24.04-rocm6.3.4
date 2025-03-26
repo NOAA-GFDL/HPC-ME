@@ -8,6 +8,7 @@ ENV PATH /opt/rocm-6.3.4/bin:/opt/rocm-6.3.4/bin:/usr/local/sbin:/usr/local/bin:
 ENV LD_LIBRARY_PATH /opt/rocm-6.3.4/lib:/opt/rocm-6.3.4/lib:
 ENV rocprofiler_sdk_DIR /opt/rocm-6.3.4/lib/cmake/rocprofiler-sdk
 # Add packages that are needed for building the software stack
+RUN sed -i -e 's/http:/https:/g' /etc/apt/sources.list.d/ubuntu.sources
 RUN apt-get update -y \
  && apt-get upgrade -y \
  && apt-get install -y autoconf automake libtool cmake autoconf-archive build-essential wget git
