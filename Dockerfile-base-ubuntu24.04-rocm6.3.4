@@ -1,0 +1,135 @@
+# Use rocm container with amdflang/clang 18.0.0
+FROM rocm/dev-ubuntu-24.04:6.3.4-complete
+# Set up the environment for the compilers
+ENV PYTHONPATH /opt/rocm-6.3.4/:/opt/rocm-6.3.4/:
+ENV CMAKE_PREFIX_PATH /opt/rocm-6.3.4:/opt/rocm-6.3.4:
+ENV rocprofiler_sdk_ROOT /opt/rocm-6.3.4
+ENV PATH /opt/rocm-6.3.4/bin:/opt/rocm-6.3.4/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ENV LD_LIBRARY_PATH /opt/rocm-6.3.4/lib:/opt/rocm-6.3.4/lib:
+ENV rocprofiler_sdk_DIR /opt/rocm-6.3.4/lib/cmake/rocprofiler-sdk
+# Add packages that are needed for building the software stack
+RUN apt-get update -y \
+ && apt-get upgrade -y \
+ && apt-get install -y autoconf automake libtool cmake autoconf-archive build-essential wget git
+# Get the latest spack tagged version (because we're crazy)
+RUN mkdir -p /opt && cd /opt && git clone -b develop-2025-03-23 https://github.com/spack/spack.git
+RUN . /opt/spack/share/spack/setup-env.sh \
+ && spack compiler add
+# Set up the rocmcc compiler with the correct version
+RUN echo "- compiler:" >> /root/.spack/linux/compilers.yaml \ 
+ && echo "    spec: rocmcc@6.3.4" >> /root/.spack/linux/compilers.yaml \
+ && echo "    paths:" >> /root/.spack/linux/compilers.yaml \
+ && echo "      cc: /opt/rocm-6.3.4/bin/amdclang" >> /root/.spack/linux/compilers.yaml \
+ && echo "      cxx: /opt/rocm-6.3.4/bin/amdclang++" >> /root/.spack/linux/compilers.yaml \
+ && echo "      f77: /opt/rocm-6.3.4/bin/amdflang" >> /root/.spack/linux/compilers.yaml \
+ && echo "      fc: /opt/rocm-6.3.4/bin/amdflang" >> /root/.spack/linux/compilers.yaml \
+ && echo "    flags: {}" >> /root/.spack/linux/compilers.yaml \
+ && echo "    operating_system: ubuntu24.04" >> /root/.spack/linux/compilers.yaml \
+ && echo "    target: x86_64" >> /root/.spack/linux/compilers.yaml \
+ && echo "    modules: []" >> /root/.spack/linux/compilers.yaml \
+ && echo "    environment: {}" >> /root/.spack/linux/compilers.yaml \
+ && echo "    extra_rpaths: []" >> /root/.spack/linux/compilers.yaml 
+# Create the spack environment yaml
+RUN mkdir -p /opt/spack-environment && \
+set -o noclobber \
+&&  (echo spack: \
+&&   echo '  mirrors:'\
+&&   echo '    E4S: https://cache.e4s.io/noaa'\
+&&   echo '  definitions:' \
+&&   echo '  - packages_builtin:' \
+&&   echo '    - bacio%rocmcc@6.3.4' \
+&&   echo '    - hdf5@1.12.2%rocmcc@6.3.4' \
+&&   echo '    - ip%rocmcc@6.3.4' \
+&&   echo '    - libyaml@0.2.5%rocmcc@6.3.4' \
+&&   echo '    - nccmp@1.9.1.0%rocmcc@6.3.4' \
+&&   echo '    - netcdf-c@4.9.2%rocmcc@6.3.4' \
+&&   echo '    - netcdf-fortran@4.6.1%rocmcc@6.3.4' \
+&&   echo '    - sp@2.3.3%rocmcc@6.3.4' \
+#&&   echo '    - w3emc@2.11.0' \
+#&&   echo '    - w3nco@2.4.1' \
+&&   echo '    - zlib%rocmcc@6.3.4' \
+&&   echo '    - zlib-ng@2.1.4%rocmcc@6.3.4' \
+&&   echo '    - zstd@1.5.4' \
+&&   echo '    - mpich@4.3.0%rocmcc@6.3.4' \
+&&   echo '    - curl%rocmcc@6.3.4 '\
+&&   echo '  packages:' \
+&&   echo '    hdf5:' \
+&&   echo '      variants: +fortran+hl+szip' \
+&&   echo '    netcdf-c:' \
+&&   echo '      variants: +dap' \
+&&   echo '    pango:' \
+&&   echo '      variants: +X' \
+&&   echo '    cmake:' \
+&&   echo '      externals:' \
+&&   echo '      - spec: "cmake@3.28.3"' \
+&&   echo '        prefix: "/usr"' \
+&&   echo '      buildable: False' \
+#&&   echo '    autoconf:' \
+#&&   echo '      externals:' \
+#&&   echo '      - spec: "autoconf@2.71"' \
+#&&   echo '      buildable: False' \
+&&   echo '    automake:' \
+&&   echo '      externals:' \
+&&   echo '      - spec: "automake@1.16.5"' \
+&&   echo '        prefix: "/usr"' \
+&&   echo '      buildable: False' \
+&&   echo '    binutils:' \
+&&   echo '      externals:' \
+&&   echo '      - spec: "binutils@2.42"' \
+&&   echo '        prefix: "/usr"' \
+&&   echo '      buildable: False' \
+&&   echo '    diffutils:' \
+&&   echo '      externals:' \
+&&   echo '      - spec: "diffutils@3.10"' \
+&&   echo '        prefix: "/usr"' \
+&&   echo '      buildable: False' \
+&&   echo '    gmake:' \
+&&   echo '      externals:' \
+&&   echo '      - spec: "gmake@4.3"' \
+&&   echo '        prefix: "/usr"' \
+&&   echo '      buildable: False' \
+&&   echo '    libtool:' \
+&&   echo '      externals:' \
+&&   echo '      - spec: "libtool@2.4.7"' \
+&&   echo '        prefix: "/usr"' \
+&&   echo '      buildable: False' \
+&&   echo '    m4:' \
+&&   echo '      externals:' \
+&&   echo '      - spec: "m4@1.4.19"' \
+&&   echo '        prefix: "/usr"' \
+&&   echo '      buildable: False' \
+&&   echo '    perl:' \
+&&   echo '      externals:' \
+&&   echo '      - spec: "perl@5.38.2"' \
+&&   echo '        prefix: "/usr"' \
+&&   echo '      buildable: False' \
+&&   echo '    tar:' \
+&&   echo '      externals:' \
+&&   echo '      - spec: "tar@1.35"' \
+&&   echo '        prefix: "/usr"' \
+&&   echo '      buildable: False' \
+&&   echo '    all:' \
+&&   echo '      target: [x86_64]' \
+&&   echo '      providers:' \
+&&   echo '        zlib-api: [zlib-ng+compat, zlib]' \
+&&   echo '      compiler: [rocmcc]' \
+&&   echo '  specs:' \
+&&   echo '  - matrix:' \
+&&   echo '    - [$packages_builtin]' \
+&&   echo '  concretizer:' \
+&&   echo '    unify: True' \
+&&   echo '  config:' \
+&&   echo '    install_tree: /opt/software' \
+&&   echo '  view: /opt/views/view') > /opt/spack-environment/spack.yaml
+# Build the spack environment
+RUN . /opt/spack/share/spack/setup-env.sh \
+ && cd /opt/spack-environment \
+# && spack external find \
+ && spack --verbose env activate . && spack --verbose install --fail-fast && spack gc -y
+# Set up the environment variables with the software stack
+ENV LD_LIBRARY_PATH /opt/views/view/lib:$LD_LIBRARY_PATH
+ENV LIBRARY_PATH /opt/views/view/lib:$LIBRARY_PATH
+ENV PATH /opt/views/view/bin:$PATH
+
+
+ENTRYPOINT ["/bin/bash"]
