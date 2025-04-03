@@ -75,20 +75,20 @@ build-ubuntu-rocm:
 build-ubuntu-intel:
   stage: build
   variables:
-    DOCKERFILE: Dockerfile-base-ubuntu24.04-intel2025 
+    DOCKERFILE: Dockerfile-base-ubuntu24.04-intel2025.1 
     APP: "base"
     OS: ubuntu24.04
     COMPILER_TYPE: intel
-    COMPILER_VERSION: 2025
+    COMPILER_VERSION: 2025.1
   <<: *buildScript
 
 build-ubuntu-intelrte:
   stage: build
   variables:
-    DOCKERFILE: Dockerfile-base-ubuntu24.04-intel2025
+    DOCKERFILE: Dockerfile-base-ubuntu24.04-intel2025.1rte
     APP: "base"
     OS: ubuntu24.04
     COMPILER_TYPE: intel
-    COMPILER_VERSION: 2025rte
+    COMPILER_VERSION: 2025.1rte
   <<: *buildScript
 

@@ -1,4 +1,4 @@
-FROM docker-archive:base-ubuntu24-intel2025.tar as builder
+FROM docker-archive:base-ubuntu24-intel2025_1.tar as builder
 
 FROM intel/oneapi-runtime:latest as final
 ##Copy libraries from builder
