@@ -62,6 +62,15 @@ build-ubuntu-cefi:
     COMPILER_VERSION: 24
   <<: *buildScript
 
+build-ubuntu-rocm:
+  stage: build
+  variables:
+    DOCKERFILE: Dockerfile-base-ubuntu24.04-rocm6.3.4
+    APP: "base"
+    OS: ubuntu24.04
+    COMPILER_TYPE: amdclang
+    COMPILER_VERSION: 18.0.0
+  <<: *buildScript
 
 build-ubuntu-intel:
   stage: build
