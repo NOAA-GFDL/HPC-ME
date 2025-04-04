@@ -1,6 +1,7 @@
 FROM intel/oneapi-hpckit:2025.1.0-0-devel-ubuntu24.04 as builder
 ############## Set up build environment#################
 # Add packages needed for building software stack 
+RUN sed -i -e 's/http:/https:/g' /etc/apt/sources.list.d/ubuntu.sources
 RUN apt-get update -y \
  && apt-get upgrade -y \
  && apt-get install -y autoconf automake libtool cmake autoconf-archive build-essential wget git
