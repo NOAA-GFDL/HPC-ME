@@ -85,7 +85,7 @@ build-ubuntu-intel:
 build-ubuntu-intelrte:
   stage: build
   variables:
-    DOCKERFILE: Dockerfile-base-ubuntu24.04-intel2025.1rte
+    DOCKERFILE: Dockerfile-base-ubuntu24.04-intel2025.1
     APP: "base"
     OS: ubuntu24.04
     COMPILER_TYPE: intel
