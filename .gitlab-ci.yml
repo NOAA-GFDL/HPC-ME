@@ -92,3 +92,33 @@ build-ubuntu-intelrte:
     COMPILER_VERSION: 2025.1rte
   <<: *buildScript
 
+build-rocky8-gcc13.2-spack202401:
+  stage: build
+  variables:
+    DOCKERFILE: Dockerfile-spack202401-rocky8-gcc13.2
+    APP: "base"
+    OS: rocky8
+    COMPILER_TYPE: gcc
+    COMPILER_VERSION: 13.2.0
+  <<: *buildScript
+
+build-rocky8-gcc13.2-spack202402:
+  stage: build
+  variables:
+    DOCKERFILE: Dockerfile-spack202402-rocky8-gcc13.2
+    APP: "base"
+    OS: rocky8
+    COMPILER_TYPE: gcc
+    COMPILER_VERSION: 13.2.0
+  <<: *buildScript
+
+build-rocky8-gcc13.3-spack202501:
+  stage: build
+  variables:
+    DOCKERFILE: Dockerfile-spack202501-rocky8-gcc13.3
+    APP: "base"
+    OS: rocky8
+    COMPILER_TYPE: gcc
+    COMPILER_VERSION: 13.3.0
+  <<: *buildScript
+
