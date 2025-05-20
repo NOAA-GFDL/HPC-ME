@@ -52,16 +52,6 @@ build-ppp:
     COMPILER_VERSION: 1
   <<: *buildScript
 
-build-ubuntu-cefi:
-  stage: build
-  variables:
-    DOCKERFILE: apps/Dockerfile-cefi-ubuntu22.04-intel24
-    APP: "cefi"
-    OS: ubuntu22.04
-    COMPILER_TYPE: intel
-    COMPILER_VERSION: 24
-  <<: *buildScript
-
 build-ubuntu-rocm:
   stage: build
   variables:
@@ -70,26 +60,6 @@ build-ubuntu-rocm:
     OS: ubuntu24.04
     COMPILER_TYPE: amdclang
     COMPILER_VERSION: 18.0.0
-  <<: *buildScript
-
-build-ubuntu-intel:
-  stage: build
-  variables:
-    DOCKERFILE: Dockerfile-base-ubuntu24.04-intel2025.1 
-    APP: "base"
-    OS: ubuntu24.04
-    COMPILER_TYPE: intel
-    COMPILER_VERSION: 2025.1
-  <<: *buildScript
-
-build-ubuntu-intelrte:
-  stage: build
-  variables:
-    DOCKERFILE: Dockerfile-base-ubuntu24.04-intel2025.1rte
-    APP: "base"
-    OS: ubuntu24.04
-    COMPILER_TYPE: intel
-    COMPILER_VERSION: 2025.1rte
   <<: *buildScript
 
 build-rocky8-gcc13.2-spack202401:
@@ -121,4 +91,3 @@ build-rocky8-gcc13.3-spack202501:
     COMPILER_TYPE: gcc
     COMPILER_VERSION: 13.3.0
   <<: *buildScript
-
