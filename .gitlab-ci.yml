@@ -42,6 +42,16 @@ variables:
 stages:
   - build
 
+build-fudge:
+  stage: build
+  variables:
+    DOCKERFILE: apps/Dockerfile-fudge-ubuntu24.04
+    APP: "fudge"
+    OS: ubuntu
+    COMPILER_TYPE: none
+    COMPILER_VERSION: oreo-20250402
+  <<: *buildScript
+    
 build-ppp:
   stage: build
   variables:
