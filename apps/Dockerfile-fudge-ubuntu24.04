@@ -1,4 +1,4 @@
-FROM ubuntu:24.04
+FROM ubuntu:24.04 as builder
 RUN apt-get update && apt-get install -y csh bash git which eval readlink python3 getopt 
 RUN apt-get install -y miniconda
 RUN conda create -n env \
