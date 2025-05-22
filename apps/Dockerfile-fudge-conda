@@ -2,8 +2,8 @@ FROM continuumio/miniconda3:25.3.1-1 as builder
 RUN apt-get update -y \
  && apt-get install -y csh git which 
 RUN conda create -n env \
- && conda install conda-forge::cdo \
- && conda install -n env R conda-forge::udunits \
+ && conda install conda-forge::nco=5.1.9 \
+ && conda install -n env conda-forge::r=4.2 conda-forge::cdo=2.4.0 \
  && conda init
 RUN mkdir -p /apps \
  && cd /apps \
