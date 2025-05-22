@@ -15,7 +15,7 @@ RUN apt-get install -y tcsh
 SHELL ["/bin/tcsh", "-c"]
 RUN conda init 
 SHELL ["conda", "run", "-n", "env", "/bin/tcsh", "-c"]
-ENV SHELL /bin/tcsh
+ENV SHELL container 
 RUN echo $SHELL
 RUN /bin/tcsh -c eval `apps/fudge/checkout-fudge --fudgetag oreo-20250402`
 SHELL ["conda", "activate", "-n", "env", "/bin/tcsh", "-c"]
