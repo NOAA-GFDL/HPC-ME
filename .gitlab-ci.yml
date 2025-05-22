@@ -45,9 +45,9 @@ stages:
 build-fudge:
   stage: build
   variables:
-    DOCKERFILE: apps/Dockerfile-fudge-ubuntu24.04
+    DOCKERFILE: apps/Dockerfile-fudge-conda
     APP: "fudge"
-    OS: ubuntu
+    OS: ubuntu24.04 
     COMPILER_TYPE: none
     COMPILER_VERSION: oreo-20250402
   <<: *buildScript
