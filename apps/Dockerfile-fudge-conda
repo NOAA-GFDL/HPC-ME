@@ -2,12 +2,21 @@ FROM continuumio/miniconda3:25.3.1-1 as builder
 RUN apt-get update -y \
  && apt-get install -y csh git which 
 RUN conda create -n env \
- && conda install conda-forge::nco=5.1.9 \
- && conda install -n env conda-forge::r=4.2 conda-forge::cdo=2.4.0 \
+ && conda install -n env conda-forge::nco=5.1.9 
+RUN conda install -n env conda-forge::r=4.2 conda-forge::cdo=2.4.0 \
  && conda init
 RUN mkdir -p /apps \
  && cd /apps \
- && git clone https://gitlab.gfdl.noaa.gov/esd/fudge.git  
+ && git clone -b http https://gitlab.gfdl.noaa.gov/esd/fudge.git  
 RUN mkdir -p /home/esd/bin/ \
  && cp /apps/fudge/checkout-fudge /home/esd/bin/
 ENV PATH ${PATH}:/home/esd/bin:/apps/fudge/bin
+RUN apt-get install -y tcsh
+SHELL ["/bin/tcsh", "-c"]
+RUN conda init 
+SHELL ["conda", "run", "-n", "env", "/bin/tcsh", "-c"]
+ENV SHELL /bin/tcsh
+RUN echo $SHELL
+RUN /bin/tcsh -c eval `apps/fudge/checkout-fudge --fudgetag oreo-20250402`
+SHELL ["conda", "activate", "-n", "env", "/bin/tcsh", "-c"]
+ENTRYPOINT [ "/bin/tcsh" ]
