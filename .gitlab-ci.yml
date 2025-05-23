@@ -47,7 +47,7 @@ build-fudge:
   variables:
     DOCKERFILE: apps/Dockerfile-fudge-conda
     APP: "fudge"
-    OS: ubuntu24.04 
+    OS: debian 
     COMPILER_TYPE: none
     COMPILER_VERSION: oreo-20250402
   <<: *buildScript
