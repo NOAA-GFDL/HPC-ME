@@ -1,7 +1,7 @@
 FROM continuumio/miniconda3:25.3.1-1 as builder
 RUN sed -i -e 's/http:/https:/g' /etc/apt/sources.list.d/debian.sources
 RUN apt-get update -y \
- && apt-get install -y csh tcsh which 
+ && apt-get install -y csh tcsh which module bash
 RUN conda create -n env \
  && conda install -n env conda-forge::nco=5.1.9 
 RUN conda install -n env conda-forge::r=4.2 conda-forge::cdo=2.4.0 \
