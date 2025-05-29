@@ -25,10 +25,6 @@ RUN chmod +x /app/exec/runscript.sh
 COPY ppp/cylc-flow-tools.yaml ${conda_location}/cylc-flow-tools.yaml
 RUN mamba env create --file ${conda_location}/cylc-flow-tools.yaml -p ${conda_location}
 
-# Finding + replacing the problematic macro.py file with the corrected version
-#COPY macro.py /tmp
-#RUN /bin/bash -c 'cp /tmp/macro.py $(find ${conda_location}/ -name macro.py -print | grep metomi)'
-
 # Maybe perhaps tag an external mounted volume /mnt2 as being safe...
 # RUN git config --global --add safe.directory /mnt2
 

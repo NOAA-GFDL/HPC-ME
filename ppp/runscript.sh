@@ -6,25 +6,23 @@ set -e
 ## TO-DO: 
 ##    - automate rebuilding container when there is an update in fre-cli
 ##    - checks for the status of the workflow (before installation step)
-##POTENTIAL IDEA:
-##    - could have multiple runscripts for tools so when you use container --> apptainer exec --writable-tmpfs --bind [any bind mounts where they need to go] [container] [certain  runscript for a tool]
-##    - runscript to do "fre make run-fremake [options]"
-##    - runscript to do "fre pp wrapper (or steps) [options]"
 
 # Initialize ppp-setup
 # Set environment variables 
 export TMPDIR=/mnt/temp
 export HOME=/mnt
-export CYLC_CONF_PATH=/mnt
+
+#Not sure if needed
+#export CYLC_CONF_PATH=/mnt
 
 ### WHAT IS NEEDED ON THE CLOUD VS NOT for conda set-up
 # Initializations for conda environment in container
 conda config --add envs_dirs /opt/conda
 conda init --all
 source /opt/conda/etc/profile.d/conda.sh
-source ~/.bashrc
+#source ~/.bashrc  #not sure if needed
 conda deactivate
-conda activate /opt/conda/cylc-flow-tools
+conda activate /app/cylc-flow-tools
 
 get_user_input () {
     # User input
