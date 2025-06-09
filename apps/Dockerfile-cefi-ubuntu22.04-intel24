@@ -62,7 +62,7 @@ ENV PATH $PATH:/opt/views/view/bin
 RUN export GIT_TERMINAL_PROMPT=0 && \
    mkdir -p /apps/mom6_sis2_generic_4p_compile_symm_yaml/src && \
    cd  /apps/mom6_sis2_generic_4p_compile_symm_yaml/src && \
-   git clone --recursive --jobs=4 https://github.com/NOAA-GFDL/FMS.git -b 2024.01.02 FMS && \
+   git clone --recursive --jobs=4 https://github.com/NOAA-GFDL/FMS.git FMS && \
    git clone --recursive --jobs=4 https://github.com/NOAA-GFDL/CEFI-regional-MOM6.git -b main mom6 && \
    git clone --recursive --jobs=4 https://github.com/NOAA-GFDL/ice_param.git sis2 && \
    git clone --recursive --jobs=4 https://github.com/NOAA-GFDL/land_null.git land_null && \
