@@ -15,6 +15,7 @@ SHELL ["/bin/tcsh", "-c"]
 RUN conda init 
 SHELL ["conda", "run", "-n", "env", "/bin/tcsh", "-c"]
 ENV SHELL container 
-RUN /bin/tcsh -c eval `apps/fudge/checkout-fudge --fudgetag oreo-20250402`
+RUN mkdir -p /tmpdir
+RUN /bin/tcsh -c eval `apps/fudge/checkout-fudge --checkout-dir /tmpdir --fudgetag oreo-20250402`
 SHELL ["conda", "activate", "-n", "env", "/bin/tcsh", "-c"]
 ENTRYPOINT [ "/bin/tcsh" ]
