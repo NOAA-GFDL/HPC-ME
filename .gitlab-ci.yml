@@ -68,7 +68,7 @@ build-ubuntu-rocm:
 build-rocky8-gcc13.2-spack202402:
   stage: build
   variables:
-    DOCKERFILE: Dockerfile-spack202402-rocky8-spack202402
+    DOCKERFILE: Dockerfile-rocky8-spack202402
     APP: "base"
     OS: rocky8
     COMPILER_TYPE: spack
@@ -78,7 +78,7 @@ build-rocky8-gcc13.2-spack202402:
 build-rocky8-gcc13.3-spack202501:
   stage: build
   variables:
-    DOCKERFILE: Dockerfile-spack202501-rocky8-spack202501
+    DOCKERFILE: Dockerfile-rocky8-spack202501
     APP: "base"
     OS: rocky8
     COMPILER_TYPE: spack
