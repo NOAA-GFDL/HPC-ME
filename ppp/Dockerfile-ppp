@@ -18,20 +18,15 @@ RUN apt update \
 RUN conda update -n base -c conda-forge conda
 
 # Copy runscript in container and make it executable
-COPY ppp/runscript.sh /app/exec/runscript.sh
+COPY ppp_files/runscript.sh /app/exec/runscript.sh
 RUN chmod +x /app/exec/runscript.sh
 
 # Set up conda environment directory for cylc workflow
-COPY ppp/cylc-flow-tools.yaml ${conda_location}/cylc-flow-tools.yaml
+COPY ppp_files/cylc-flow-tools.yaml ${conda_location}/cylc-flow-tools.yaml
 RUN mamba env create --file ${conda_location}/cylc-flow-tools.yaml -p ${conda_location}
 
 # Maybe perhaps tag an external mounted volume /mnt2 as being safe...
 # RUN git config --global --add safe.directory /mnt2
-
-RUN IFS="" \ 
-  && pv=$(python --version) \ 
-  && pv1=$(echo $pv | cut -d ' ' -f2) \ 
-  && conda config --add pkgs_dirs /opt/conda/cylc-flow-tools/lib/python$pv1/site-packages
 
 RUN conda install urwid==2.*
 
