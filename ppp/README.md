@@ -20,11 +20,11 @@ Using podman and apptainer to build, follow these steps:
 ## Clone the HPC-ME repository
 git clone git@gitlab.gfdl.noaa.gov:fre/HPC-ME.git
 
-## Navigate into the HPC-ME repo folder
-cd HPC-ME
+## Navigate into the HPC-ME/ppp repo folder
+cd HPC-ME/ppp
 
 ## Build a container image
-podman build -f ppp/Dockerfile-ppp -t 2025
+podman build -f Dockerfile-ppp -t 2025
 
 ## Save the image to a local tar file
 # It is recommended to name the container after the post-processing experiment name
