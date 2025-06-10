@@ -62,3 +62,25 @@ build-ubuntu-rocm:
     COMPILER_TYPE: amdclang
     COMPILER_VERSION: 18.0.0
   <<: *buildScript
+
+#for the spack containers, we use spack and the spack tag instead of
+#compiler and compiler version
+build-rocky8-gcc13.2-spack202402:
+  stage: build
+  variables:
+    DOCKERFILE: Dockerfile-rocky8-spack202402
+    APP: "base"
+    OS: rocky8
+    COMPILER_TYPE: spack
+    COMPILER_VERSION: 202402
+  <<: *buildScript
+
+build-rocky8-gcc13.3-spack202501:
+  stage: build
+  variables:
+    DOCKERFILE: Dockerfile-rocky8-spack202501
+    APP: "base"
+    OS: rocky8
+    COMPILER_TYPE: spack
+    COMPILER_VERSION: 202501
+  <<: *buildScript

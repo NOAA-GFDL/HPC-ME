@@ -1,0 +1,309 @@
+# Build stage with Spack pre-installed and ready to be used
+FROM spack/rockylinux8:0.23 as builder
+
+RUN sed -i '60i \    depends_on("texinfo")' /opt/spack/var/spack/repos/builtin/packages/bison/package.py && cat /opt/spack/var/spack/repos/builtin/packages/bison/package.py
+
+RUN mkdir -p /opt/spack/var/spack/repos/custom/packages/fre-nctools && \ 
+set -o noclobber \
+&&  (echo '# Copyright 2013-2024 Lawrence Livermore National Security, LLC and other'\
+&&   echo '# Spack Project Developers. See the top-level COPYRIGHT file for details.'\
+&&   echo '# SPDX-License-Identifier: (Apache-2.0 OR MIT)'\
+&&   echo 'from spack import *'\
+&&   echo 'class FreNctools(AutotoolsPackage):'\
+&&   echo '    """FRE-NCtools is a collection of tools to help with the creation and manipulation of netCDF'\
+&&   echo '       files used for or written by the climate models developed at the Geophysical Fluid Dynamics'\
+&&   echo '       Laboratory (GFDL)."""'\
+&&   echo '    homepage = "https://github.com/NOAA-GFDL/FRE-NCtools"'\
+&&   echo '    git = "https://github.com/NOAA-GFDL/FRE-NCtools.git"'\
+&&   echo '    maintainers = ["underwoo", "ngs333", "ceblanton"]'\
+&&   echo '    version("2022.02", tag="2022.02")'\
+&&   echo '    version("2023.01", tag="2023.01")'\
+&&   echo '    version("2023.01.01", tag="2023.01.01")'\
+&&   echo '    version("2023.01.02", tag="2023.01.02")'\
+&&   echo '    version("2024.01", tag="2024.01")'\
+&&   echo '    version("2024.02", tag="2024.02")'\
+&&   echo '    version("2024.03", tag="2024.03")'\
+&&   echo '    version("2024.04", tag="2024.04")'\
+&&   echo '    version("2024.05", tag="2024.05")'\
+&&   echo '    version("2024.05.01", tag="2024.05.01")'\
+&&   echo '    variant("quad-precision", default=False, description="Enable higher (quad) precision")'\
+&&   echo '    variant("mpi", default=True, description="Enable MPI support")'\
+&&   echo '    depends_on("autoconf", type="build")'\
+&&   echo '    depends_on("automake", type="build")'\
+&&   echo '    depends_on("libtool", type="build")'\
+&&   echo '    depends_on("m4", type="build")'\
+&&   echo '    depends_on("nco")'\
+&&   echo '    depends_on("netcdf-c~mpi", when="~mpi")'\
+&&   echo '    depends_on("netcdf-c+mpi", when="+mpi")'\
+&&   echo '    depends_on("netcdf-fortran")'\
+&&   echo '    depends_on("mpi", when="+mpi")'\
+&&   echo '    install_targets = ["install-exec"]'\
+&&   echo '    def configure_args(self):'\
+&&   echo '        args = self.enable_or_disable("quad-precision")'\
+&&   echo '        args += self.with_or_without("mpi")'\
+&&   echo '        return args' ) > /opt/spack/var/spack/repos/custom/packages/fre-nctools/package.py
+RUN mkdir -p /opt/spack/var/spack/repos/custom/packages/fre-nctools && \
+set -o noclobber \
+&&   (echo 'repo: '\
+&&   echo '  namespace: custom' ) > /opt/spack/var/spack/repos/custom/repo.yaml
+
+# What we want to install and how we want to install it
+# is specified in a manifest file (spack.yaml)
+RUN mkdir -p /opt/spack-environment && \
+set -o noclobber \
+&&  (echo spack: \
+&&   echo '  definitions:' \
+&&   echo '  - packages_builtin:' \
+&&   echo '    - autoconf@2.72' \
+&&   echo '    - automake@1.16.5' \
+&&   echo '    - bacio@2.6.0' \
+&&   echo '    - bats@1.10.0' \
+&&   echo '    - cdo@2.4.4' \
+&&   echo '    - cloc@2.00' \
+&&   echo '    - cmake@3.30.5' \
+&&   echo '    - esmf@8.7.0' \
+&&   echo '    - g2@3.5.1' \
+&&   echo '    - g2tmpl@1.13.0' \
+&&   echo '    - gdal@3.10.0' \
+&&   echo '    - geos@3.13.0' \
+&&   echo '    - gh@2.58.0' \
+&&   echo '    - git@2.47.0' \
+&&   echo '    - git-lfs@3.5.1' \
+&&   echo '    - gnuplot@6.0.0' \
+&&   echo '    - grace@5.1.25' \
+&&   echo '    - gsl@2.8' \
+&&   echo '    - hdf5@1.14.5' \
+&&   echo '    - ip@5.1.0' \
+&&   echo '    - jasper@4.2.4' \
+&&   echo '    - libgeotiff@1.7.1' \
+&&   echo '    - libpng@1.6.39' \
+&&   echo '    - libtool@2.4.7' \
+&&   echo '    - magics@4.15.3' \
+&&   echo '    - mpich@4.2.3' \
+&&   echo '    - nasm@2.16.03' \
+&&   echo '    - nccmp@1.9.1.0' \
+&&   echo '    - nco@5.2.4' \
+&&   echo '    - ncview@2.1.9' \
+&&   echo '    - netcdf-c@4.9.2' \
+&&   echo '    - netcdf-fortran@4.6.1' \
+&&   echo '    - octave@8.4.0' \
+&&   echo '    - openjdk@17.0.11_9' \
+&&   echo '    - openmpi@5.0.5' \
+&&   echo '    - parallel@20240822' \
+&&   echo '    - pigz@2.8' \
+&&   echo '    - proj@9.4.1' \
+&&   echo '    - r@4.4.1' \
+&&   echo '    - sp@2.5.0' \
+&&   echo '    - tig@2.5.10' \
+&&   echo '    - udunits@2.2.28' \
+&&   echo '    - w3emc@2.12.0' \
+&&   echo '    - w3nco@2.4.1' \
+&&   echo '    - zlib@1.3.1' \
+&&   echo '    - zlib-ng@2.2.1' \
+&&   echo '  - packages_custom:' \
+&&   echo '    - fre-nctools@2024.05.01' \
+&&   echo '  packages:' \
+&&   echo '    cairo:' \
+&&   echo '      variants: +X' \
+&&   echo '    gdal:' \
+&&   echo '      variants: +netcdf' \
+&&   echo '    gnuplot:' \
+&&   echo '      variants: +X' \
+&&   echo '    hdf5:' \
+&&   echo '      variants: +fortran+hl+szip' \
+&&   echo '    libtiff:' \
+&&   echo '      variants: +zlib+jpeg+lzma' \
+&&   echo '    netcdf-c:' \
+&&   echo '      variants: +dap' \
+&&   echo '    pango:' \
+&&   echo '      variants: +X' \
+&&   echo '    all:' \
+&&   echo '      target: [x86_64]' \
+&&   echo '      providers:' \
+&&   echo '        mpi: [mpich]' \
+&&   echo '        zlib-api: [zlib-ng+compat, zlib]' \
+&&   echo '      compiler: [gcc@13.3.0]' \
+&&   echo '  specs:' \
+&&   echo '  - gcc@13.3.0' \
+&&   echo '  - matrix:' \
+&&   echo '    - [$packages_builtin, $packages_custom]' \
+&&   echo '  concretizer:' \
+&&   echo '    unify: true' \
+&&   echo '  config:' \
+&&   echo '    install_tree: /opt/software' \
+&&   echo '  repos:' \
+&&   echo '  - $spack/var/spack/repos/custom' \
+&&   echo '  - $spack/var/spack/repos/builtin' \
+&&   echo '  view: /opt/views/view') > /opt/spack-environment/spack.yaml
+
+# Install gcc 13.3.0
+RUN . /opt/spack/share/spack/setup-env.sh && \   
+   spack install gcc@13.3.0
+RUN . /opt/spack/share/spack/setup-env.sh && \
+   spack load gcc@13.3.0 && \
+   spack compiler add && \
+   spack install gcc@13.3.0%gcc@13.3.0
+RUN . /opt/spack/share/spack/setup-env.sh && \
+   spack compiler remove gcc@13.3.0 &&\
+   spack compiler remove gcc@8.5.0
+
+# Install the software, remove unnecessary deps
+RUN . /opt/spack/share/spack/setup-env.sh && cd /opt/spack-environment && spack load gcc@13.3.0%gcc@13.3.0 && spack compiler add && spack --verbose env activate . && spack --verbose install --fail-fast && spack gc -y
+
+# Strip all the binaries
+RUN find -L /opt/views/view/* -type f -exec readlink -f '{}' \; | \
+    xargs file -i | \
+    grep 'charset=binary' | \
+    grep 'x-executable\|x-archive\|x-sharedlib' | \
+    awk -F: '{print $1}' | xargs strip
+
+# Modifications to the environment that are necessary to run
+RUN . /opt/spack/share/spack/setup-env.sh && \
+    cd /opt/spack-environment && \
+    spack env activate --sh -d . > activate.sh
+RUN { \
+      echo '#!/bin/sh' \
+      && echo '.' /opt/spack-environment/activate.sh \
+      && echo 'exec "$@"'; \
+    } > /entrypoint.sh \
+&& chmod a+x /entrypoint.sh \
+&& ln -s /opt/views/view /opt/view
+ENTRYPOINT [ "/entrypoint.sh" ]
+CMD [ "/bin/bash" ]
+
+# Install R add-on packages
+RUN mkdir -p /opt/spack/scripts && \ 
+set -o noclobber \
+&&  (echo '# CRAN mirror to use for repo'\
+&&   echo 'options(repos=c(CRAN="https://mirrors.nics.utk.edu/cran/"))'\
+&&   echo '# Additional R packages'\
+&&   echo 'rpackages <- list('\
+&&   echo '"jsonlite",'\
+&&   echo '"plyr",'\
+&&   echo '"CDFt",'\
+&&   echo '"devtools",'\
+&&   echo '"MBC",'\
+&&   echo '"stringr",'\
+&&   echo '"caTools",'\
+&&   echo '"moments",'\
+&&   echo '"RColorBrewer",'\
+&&   echo '"viridis",'\
+&&   echo '"optparse",'\
+&&   echo '"getopt",'\
+&&   echo '"ncdf4",'\
+&&   echo '"fields",'\
+&&   echo '"mapdata",'\
+&&   echo '"maps",'\
+&&   echo '"abind",'\
+&&   echo '"SPEI",'\
+&&   echo '"Rcpp",'\
+&&   echo '"VennDiagram",'\
+&&   echo '"RUnit",'\
+&&   echo '"distillery",'\
+&&   echo '"extRemes",'\
+&&   echo '"futile.logger",'\
+&&   echo '"doParallel",'\
+&&   echo '"doRNG",'\
+&&   echo '"rngtools",'\
+&&   echo '"BH",'\
+&&   echo '"RNetCDF",'\
+&&   echo '"RcppEigen",'\
+&&   echo '"TTR",'\
+&&   echo '"cellranger",'\
+&&   echo '"data.table",'\
+&&   echo '"doMC",'\
+&&   echo '"forcats",'\
+&&   echo '"forecast",'\
+&&   echo '"fracdiff",'\
+&&   echo '"haven",'\
+&&   echo '"hms",'\
+&&   echo '"lme4",'\
+&&   echo '"lmtest",'\
+&&   echo '"minqa",'\
+&&   echo '"nloptr",'\
+&&   echo '"openxlsx",'\
+&&   echo '"pbkrtest",'\
+&&   echo '"quadprog",'\
+&&   echo '"quantmod",'\
+&&   echo '"readr",'\
+&&   echo '"readxl",'\
+&&   echo '"rematch",'\
+&&   echo '"reticulate",'\
+&&   echo '"rio",'\
+&&   echo '"snow",'\
+&&   echo '"uroot",'\
+&&   echo '"FNN",'\
+&&   echo '"Kendall",'\
+&&   echo '"POT",'\
+&&   echo '"R.methodsS3",'\
+&&   echo '"R.oo",'\
+&&   echo '"R.utils",'\
+&&   echo '"RCurl",'\
+&&   echo '"RMAWGEN",'\
+&&   echo '"SCI",'\
+&&   echo '"XML",'\
+&&   echo '"bindr",'\
+&&   echo '"bindrcpp",'\
+&&   echo '"dichromat",'\
+&&   echo '"dplyr",'\
+&&   echo '"e1071",'\
+&&   echo '"evd",'\
+&&   echo '"flexmix",'\
+&&   echo '"hexbin",'\
+&&   echo '"htmltools",'\
+&&   echo '"htmlwidgets",'\
+&&   echo '"httpuv",'\
+&&   echo '"intervals",'\
+&&   echo '"ismev",'\
+&&   echo '"latticeExtra",'\
+&&   echo '"lubridate",'\
+&&   echo '"mapproj",'\
+&&   echo '"microbenchmark",'\
+&&   echo '"mixtools",'\
+&&   echo '"modeltools",'\
+&&   echo '"openair",'\
+&&   echo '"profvis",'\
+&&   echo '"qmap",'\
+&&   echo '"qrnn",'\
+&&   echo '"qualV",'\
+&&   echo '"segmented",'\
+&&   echo '"shiny",'\
+&&   echo '"sourcetools",'\
+&&   echo '"spacetime",'\
+&&   echo '"tidyr",'\
+&&   echo '"zyp",'\
+&&   echo '"pracma",'\
+&&   echo '"udunits2",'\
+&&   echo '"bibtex",'\
+&&   echo '"car",'\
+&&   echo '"clisymbols",'\
+&&   echo '"lsei",'\
+&&   echo '"npsurv",'\
+&&   echo '"rpart",'\
+&&   echo '"spatial",'\
+&&   echo '"zeallot",'\
+&&   echo '"Rmpi",'\
+&&   echo '"imputeTS",'\
+&&   echo '"gdata",'\
+&&   echo '"gplots",'\
+&&   echo '"gtools",'\
+&&   echo '"np",'\
+&&   echo '"plotrix",'\
+&&   echo '"quantreg",'\
+&&   echo '"weathermetrics",'\
+&&   echo '"terra"'\
+&&   echo ')'\
+&&   echo '# Install if not already installed'\
+&&   echo 'for (rpackage in rpackages) {'\
+&&   echo '  print(rpackage)'\
+&&   echo '  if (!require(rpackage)) install.packages(rpackage)'\
+&&   echo '}' ) > /opt/spack/scripts/R_install_packages.R
+
+ENV CPATH=/opt/views/view/include:$CPATH
+ENV LIBRARY_PATH=/opt/views/view/lib:$LIBRARY_PATH
+ENV RMPI_TYPE=OPENMPI
+RUN . /opt/spack-environment/activate.sh && \
+    R CMD BATCH /opt/spack/scripts/R_install_packages.R /opt/spack/scripts/R_install_packages.Rout && \
+    Rscript -e "install.packages('https://cran.r-project.org/src/contrib/Archive/PCICt/PCICt_0.5-4.4.tar.gz', repos=NULL, type='source')" && \
+    Rscript -e "install.packages('https://cran.r-project.org/src/contrib/Archive/climdex.pcic/climdex.pcic_1.1-11.tar.gz', repos=NULL, type='source')" && \
+    Rscript -e "install.packages('https://cran.r-project.org/src/contrib/Archive/ncdf4.helpers/ncdf4.helpers_0.3-6.tar.gz', repos=NULL, type='source')"
