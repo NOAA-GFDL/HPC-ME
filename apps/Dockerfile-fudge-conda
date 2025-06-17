@@ -21,7 +21,8 @@ RUN mkdir -p /tmpdir
 RUN /bin/tcsh -c eval `apps/fudge/checkout-fudge --checkout-dir /tmpdir --fudgetag oreo-20250402`
 RUN echo '#!/bin/tcsh' > /entrypoint.tcsh \
  && echo '# entrypoint.tcsh: Activate conda env and run the given command' >> /entrypoint.tcsh \
- && echo 'source activate env' >> /entrypoint.tcsh \
+ && echo 'source /opt/conda/etc/profile.d/conda.csh' >> /entrypoint.tcsh \
+ && echo 'conda activate env' >> /entrypoint.tcsh \
  && echo 'if ( $#argv == 0 ) then' >> /entrypoint.tcsh \
  && echo '    exec tcsh -i' >> /entrypoint.tcsh \
  && echo 'else' >> /entrypoint.tcsh \
