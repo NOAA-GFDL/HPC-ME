@@ -19,7 +19,14 @@ RUN echo 'source activate env' >> ~/.cshrc
 ENV SHELL container 
 RUN mkdir -p /tmpdir
 RUN /bin/tcsh -c eval `apps/fudge/checkout-fudge --checkout-dir /tmpdir --fudgetag oreo-20250402`
-#SHELL ["conda", "activate", "-n", "env", "/bin/tcsh", "-c"]
-COPY /home/nkz/Code/section_8_tools/entrypoint.tcsh /entrypoint.tcsh
+RUN echo '#!/bin/tcsh' > /entrypoint.tcsh \
+ && echo '# entrypoint.tcsh: Activate conda env and run the given command' >> /entrypoint.tcsh \
+ && echo 'source activate env' >> /entrypoint.tcsh \
+ && echo 'if ( $#argv == 0 ) then' >> /entrypoint.tcsh \
+ && echo '    exec tcsh -i' >> /entrypoint.tcsh \
+ && echo 'else' >> /entrypoint.tcsh \
+ && echo '    exec $argv:q' >> /entrypoint.tcsh \
+ && echo 'endif' >> /entrypoint.tcsh \
+ && chmod +x /entrypoint.tcsh
 ENTRYPOINT ["/bin/tcsh", "/entrypoint.tcsh"]
 CMD ["tcsh", "-i"]
