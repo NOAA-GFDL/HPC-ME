@@ -2,7 +2,7 @@ FROM continuumio/miniconda3:25.3.1-1 as builder
 RUN sed -i -e 's/http:/https:/g' /etc/apt/sources.list.d/debian.sources
 RUN apt-get update -y \
  && apt-get install -y csh tcsh which 
-RUN conda create -n env \
+RUN conda create -y -n env \
  && conda install -n env conda-forge::nco=5.1.9 conda-forge::r=4.2 conda-forge::cdo=2.4.0 python=3.10 numpy \
  && conda install -n env r-base \
  && conda init
@@ -11,12 +11,14 @@ RUN mkdir -p /apps \
  && git clone -b http https://gitlab.gfdl.noaa.gov/esd/fudge.git  
 RUN mkdir -p /home/esd/bin/ \
  && cp /apps/fudge/checkout-fudge /home/esd/bin/
-ENV PATH ${PATH}:/home/esd/bin:/apps/fudge/bin
+ENV PATH="/home/esd/bin:/apps/fudge/bin:/opt/conda/envs/env/bin:$PATH"
 SHELL ["/bin/tcsh", "-c"]
-RUN conda init 
-SHELL ["conda", "run", "-n", "env", "/bin/tcsh", "-c"]
+RUN echo 'source activate env' >> ~/.cshrc
+#RUN conda init 
+#SHELL ["conda", "run", "-n", "env", "/bin/tcsh", "-c"]
 ENV SHELL container 
 RUN mkdir -p /tmpdir
 RUN /bin/tcsh -c eval `apps/fudge/checkout-fudge --checkout-dir /tmpdir --fudgetag oreo-20250402`
-SHELL ["conda", "activate", "-n", "env", "/bin/tcsh", "-c"]
+#SHELL ["conda", "activate", "-n", "env", "/bin/tcsh", "-c"]
+CMD ["tcsh", "-i"]
 ENTRYPOINT [ "/bin/tcsh" ]
