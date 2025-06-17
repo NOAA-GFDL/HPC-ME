@@ -20,5 +20,6 @@ ENV SHELL container
 RUN mkdir -p /tmpdir
 RUN /bin/tcsh -c eval `apps/fudge/checkout-fudge --checkout-dir /tmpdir --fudgetag oreo-20250402`
 #SHELL ["conda", "activate", "-n", "env", "/bin/tcsh", "-c"]
+COPY entrypoint.tcsh /entrypoint.tcsh
+ENTRYPOINT ["/bin/tcsh", "/entrypoint.tcsh"]
 CMD ["tcsh", "-i"]
-ENTRYPOINT [ "/bin/tcsh" ]
