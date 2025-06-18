@@ -14,10 +14,9 @@ RUN mkdir -p /home/esd/bin/ \
 ENV PATH="/home/esd/bin:/apps/fudge/bin:/opt/conda/envs/env/bin:$PATH"
 SHELL ["/bin/tcsh", "-c"]
 RUN echo 'source activate env' >> ~/.cshrc
-#RUN conda init 
-#SHELL ["conda", "run", "-n", "env", "/bin/tcsh", "-c"]
 ENV SHELL container 
 RUN mkdir -p /tmpdir
 RUN /bin/tcsh -c eval `apps/fudge/checkout-fudge --checkout-dir /tmpdir --fudgetag oreo-20250402`
+RUN conda run -n env Rscript -e "install.packages('optparse', repos='https://cloud.r-project.org/')"
 ENTRYPOINT ["/bin/tcsh"]
 CMD ["tcsh", "-i"]
