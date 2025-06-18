@@ -18,5 +18,7 @@ ENV SHELL container
 RUN mkdir -p /tmpdir
 RUN /bin/tcsh -c eval `apps/fudge/checkout-fudge --checkout-dir /tmpdir --fudgetag oreo-20250402`
 RUN conda run -n env Rscript -e "install.packages('optparse', repos='https://cloud.r-project.org/')"
+RUN cp -r /tmpdir/oreo-20250402 /apps/
+ENV PYTHONPATH="/apps/fudge/utils/aux\:/apps/fudge/utils/bin\:/apps/fudge/utils/pp\:/apps/fudge/bin"
 ENTRYPOINT ["/bin/tcsh"]
 CMD ["tcsh", "-i"]
