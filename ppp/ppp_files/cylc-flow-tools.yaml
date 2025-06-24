@@ -4,6 +4,7 @@ channels:
   - NOAA-GFDL
 dependencies:
   - noaa-gfdl::hsm
+  # Fre-Cli version number has to be tagged curently or else older version is grabbed... need to resolve this eventually
   - noaa-gfdl::fre-cli ==2025.03
   - noaa-gfdl::fre-python-tools
 #  - conda-forge::nco
