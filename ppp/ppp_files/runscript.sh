@@ -37,6 +37,8 @@ get_user_input () {
 
     echo Please Enter Path to model yaml file:
     read -r yamlfile
+
+    name=${expname}__${plat}__${targ}
 }
 
 create_dirs () {
@@ -70,19 +72,20 @@ fre_pp_steps () {
     echo -e "\nCreating $name directory in ${HOME}/cylc-src/${name} ...... "
 
     ##checkout creates cylc-src if it doesn't exist in HOME 
-    fre pp checkout -e ${expname} -p ${plat} -t ${targ}
+    fre -v pp checkout -e ${expname} -p ${plat} -t ${targ}
+#    exit 0
 
     ## Configure the rose-suite and rose-app files for the workflow
     echo -e "\nConfiguring the rose-suite and rose-app files ..."
-    fre pp configure-yaml -e ${expname} -p ${plat} -t ${targ} -y ${yamlfile}
+    fre -v pp configure-yaml -e ${expname} -p ${plat} -t ${targ} -y ${yamlfile}
 
     ## Validate the configuration files
     echo -e "\nValidating rose-suite and rose-app configuration files for workflow ... "
-    fre pp validate -e ${expname} -p ${plat} -t ${targ} || echo "validate, no kill"
+    fre -v pp validate -e ${expname} -p ${plat} -t ${targ} || echo "validate, no kill"
 
     # Install
     echo -e "\nInstalling the workflow in ${HOME}/cylc-run/${name} ... "
-    fre pp install -e ${expname} -p ${plat} -t ${targ}
+    fre -v pp install -e ${expname} -p ${plat} -t ${targ}
 
     ## RUN
     read -p "Would you like to see a verbose post-processing output? (y/n) (Default behavior is no):  " yn
@@ -92,10 +95,10 @@ fre_pp_steps () {
         [Yy] ) cylc play --no-detach --debug ${name}
         ;;
 
-        [Nn] ) fre pp run -e ${expname} -p ${plat} -t ${targ}
+        [Nn] ) fre -v pp run -e ${expname} -p ${plat} -t ${targ}
         ;;
 
-        * ) fre pp run -e ${expname} -p ${plat} -t ${targ}
+        * ) fre -v pp run -e ${expname} -p ${plat} -t ${targ}
         ;;
     esac
 }
