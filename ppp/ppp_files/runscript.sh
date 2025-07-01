@@ -73,7 +73,6 @@ fre_pp_steps () {
 
     ##checkout creates cylc-src if it doesn't exist in HOME 
     fre -v pp checkout -e ${expname} -p ${plat} -t ${targ}
-#    exit 0
 
     ## Configure the rose-suite and rose-app files for the workflow
     echo -e "\nConfiguring the rose-suite and rose-app files ..."
