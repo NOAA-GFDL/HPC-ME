@@ -17,10 +17,8 @@ export HOME=/mnt
 
 ### WHAT IS NEEDED ON THE CLOUD VS NOT for conda set-up
 # Initializations for conda environment in container
-conda config --add envs_dirs /opt/conda
 conda init --all
 source /opt/conda/etc/profile.d/conda.sh
-#source ~/.bashrc  #not sure if needed
 conda deactivate
 conda activate /app/cylc-flow-tools
 
