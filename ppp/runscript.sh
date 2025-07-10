@@ -6,25 +6,21 @@ set -e
 ## TO-DO: 
 ##    - automate rebuilding container when there is an update in fre-cli
 ##    - checks for the status of the workflow (before installation step)
-##POTENTIAL IDEA:
-##    - could have multiple runscripts for tools so when you use container --> apptainer exec --writable-tmpfs --bind [any bind mounts where they need to go] [container] [certain  runscript for a tool]
-##    - runscript to do "fre make run-fremake [options]"
-##    - runscript to do "fre pp wrapper (or steps) [options]"
 
 # Initialize ppp-setup
 # Set environment variables 
 export TMPDIR=/mnt/temp
 export HOME=/mnt
-export CYLC_CONF_PATH=/mnt
+
+#Not sure if needed
+#export CYLC_CONF_PATH=/mnt
 
 ### WHAT IS NEEDED ON THE CLOUD VS NOT for conda set-up
 # Initializations for conda environment in container
-conda config --add envs_dirs /opt/conda
 conda init --all
 source /opt/conda/etc/profile.d/conda.sh
-source ~/.bashrc
 conda deactivate
-conda activate /opt/conda/cylc-flow-tools
+conda activate /app/cylc-flow-tools
 
 get_user_input () {
     # User input
@@ -39,6 +35,8 @@ get_user_input () {
 
     echo Please Enter Path to model yaml file:
     read -r yamlfile
+
+    name=${expname}__${plat}__${targ}
 }
 
 create_dirs () {
@@ -72,19 +70,19 @@ fre_pp_steps () {
     echo -e "\nCreating $name directory in ${HOME}/cylc-src/${name} ...... "
 
     ##checkout creates cylc-src if it doesn't exist in HOME 
-    fre pp checkout -e ${expname} -p ${plat} -t ${targ}
+    fre -v pp checkout -e ${expname} -p ${plat} -t ${targ}
 
     ## Configure the rose-suite and rose-app files for the workflow
     echo -e "\nConfiguring the rose-suite and rose-app files ..."
-    fre pp configure-yaml -e ${expname} -p ${plat} -t ${targ} -y ${yamlfile}
+    fre -v pp configure-yaml -e ${expname} -p ${plat} -t ${targ} -y ${yamlfile}
 
     ## Validate the configuration files
     echo -e "\nValidating rose-suite and rose-app configuration files for workflow ... "
-    fre pp validate -e ${expname} -p ${plat} -t ${targ} || echo "validate, no kill"
+    fre -v pp validate -e ${expname} -p ${plat} -t ${targ} || echo "validate, no kill"
 
     # Install
     echo -e "\nInstalling the workflow in ${HOME}/cylc-run/${name} ... "
-    fre pp install -e ${expname} -p ${plat} -t ${targ}
+    fre -v pp install -e ${expname} -p ${plat} -t ${targ}
 
     ## RUN
     read -p "Would you like to see a verbose post-processing output? (y/n) (Default behavior is no):  " yn
@@ -94,10 +92,10 @@ fre_pp_steps () {
         [Yy] ) cylc play --no-detach --debug ${name}
         ;;
 
-        [Nn] ) fre pp run -e ${expname} -p ${plat} -t ${targ}
+        [Nn] ) fre -v pp run -e ${expname} -p ${plat} -t ${targ}
         ;;
 
-        * ) fre pp run -e ${expname} -p ${plat} -t ${targ}
+        * ) fre -v pp run -e ${expname} -p ${plat} -t ${targ}
         ;;
     esac
 }

@@ -3,14 +3,10 @@ channels:
   - conda-forge
   - NOAA-GFDL
 dependencies:
-  - hsm
-  - fre-nctools
-  - nco
-  - cdo
-  - metomi-rose
-  - rsync
-  - make
-  - vim
-  - fre-cli ==2025.01
-#  - hdf5
-  - fre-python-tools 
+  - noaa-gfdl::hsm
+  - noaa-gfdl::fre-cli ==2025.04
+  - noaa-gfdl::fre-python-tools
+  - conda-forge::nco
+  - conda-forge::rsync
+  - conda-forge::make
+  - conda-forge::vim
