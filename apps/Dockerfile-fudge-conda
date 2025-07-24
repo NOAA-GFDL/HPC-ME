@@ -6,9 +6,10 @@ RUN conda create -y -n env \
  && conda install -n env conda-forge::nco=5.1.9 conda-forge::r=4.2 conda-forge::cdo=2.4.0 python=3.10 numpy \
  && conda install -n env r-base \
  && conda init
-RUN mkdir -p /apps \
- && cd /apps \
- && git clone -b http https://gitlab.gfdl.noaa.gov/esd/fudge.git  
+RUN mkdir -p /apps/fudge \
+ && cd /apps 
+RUN git clone -b http https://gitlab.gfdl.noaa.gov/esd/fudge.git /apps/fudge 
+RUN ls /apps/fudge
 RUN mkdir -p /home/esd/bin/ \
  && cp /apps/fudge/checkout-fudge /home/esd/bin/
 ENV PATH="/home/esd/bin:/apps/fudge/bin:/opt/conda/envs/env/bin:$PATH"
@@ -19,7 +20,9 @@ RUN mkdir -p /tmpdir
 RUN /bin/tcsh -c eval `apps/fudge/checkout-fudge --checkout-dir /tmpdir --fudgetag oreo-20250402`
 RUN conda run -n env Rscript -e "install.packages('optparse', repos='https://cloud.r-project.org/')"
 RUN cp -r /tmpdir/oreo-20250402 /apps/
+RUN ls -l /apps/oreo-20250402
 RUN chmod -R 777 /apps
+RUN ls -l /apps/oreo-20250402
 ENV PYTHONPATH="/apps/fudge/utils/aux\:/apps/fudge/utils/bin\:/apps/fudge/utils/pp\:/apps/fudge/bin"
 ENTRYPOINT ["/bin/tcsh"]
 CMD ["tcsh", "-i"]
