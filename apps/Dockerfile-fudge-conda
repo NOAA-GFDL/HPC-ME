@@ -23,6 +23,6 @@ RUN cp -r /tmpdir/oreo-20250402 /apps/
 RUN ls -l /apps/oreo-20250402
 RUN chmod -R 777 /apps
 RUN ls -l /apps/oreo-20250402
-ENV PYTHONPATH="/apps/fudge/utils/aux\:/apps/fudge/utils/bin\:/apps/fudge/utils/pp\:/apps/fudge/bin"
+ENV PYTHONPATH="${PYTHONPATH}:/apps/fudge/utils/aux\:/apps/fudge/utils/bin\:/apps/fudge/utils/pp\:/apps/fudge/bin\:/apps/fudge"
 ENTRYPOINT ["/bin/tcsh"]
 CMD ["tcsh", "-i"]
