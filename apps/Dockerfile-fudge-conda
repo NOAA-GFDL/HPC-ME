@@ -8,7 +8,7 @@ RUN conda create -y -n env \
  && conda init
 RUN mkdir -p /apps/fudge \
  && cd /apps 
-RUN git clone -b http https://gitlab.gfdl.noaa.gov/esd/fudge.git /apps/fudge 
+RUN git clone --depth 1 --branch pistachio-1137 https://gitlab.gfdl.noaa.gov/esd/fudge.git /apps/fudge 
 RUN ls /apps/fudge
 RUN mkdir -p /home/esd/bin/ \
  && cp /apps/fudge/checkout-fudge /home/esd/bin/
@@ -17,14 +17,14 @@ SHELL ["/bin/tcsh", "-c"]
 RUN echo 'source activate env' >> ~/.cshrc
 ENV SHELL container 
 RUN mkdir -p /tmpdir
-RUN /bin/tcsh -c eval `apps/fudge/checkout-fudge --checkout-dir /tmpdir --fudgetag oreo-20250402`
+RUN /bin/tcsh -c eval `apps/fudge/checkout-fudge --checkout-dir /tmpdir --fudgetag pistachio-1137`
 RUN conda run -n env Rscript -e "install.packages('optparse', repos='https://cloud.r-project.org/')"
-RUN cp -r /tmpdir/oreo-20250402 /apps/
+RUN cp -r /tmpdir/pistachio-1137 /apps/
 RUN chmod -R 777 /apps
 ENV PYTHONPATH="${PYTHONPATH}:/apps/fudge/utils/aux:/apps/fudge/utils/bin:/apps/fudge/utils/pp:/apps/fudge/bin:/apps/fudge:/apps/fudge/utils/shared_code"
-ENV BASEDIR="/apps/oreo-20250402/fudge/" 
-ENV FUDGETAG="oreo-20250402"
-ENV FUDGE_ENV="/apps/oreo-20250402/fudge/environment_info.csh"
+ENV BASEDIR="/apps/pistachio-1137/fudge/" 
+ENV FUDGETAG="pistachio-1137"
+ENV FUDGE_ENV="/apps/pistachio-1137/fudge/environment_info.csh"
 RUN python -c "import sys; print(sys.path)"
 ENTRYPOINT ["/bin/tcsh"]
 CMD ["tcsh", "-i"]
