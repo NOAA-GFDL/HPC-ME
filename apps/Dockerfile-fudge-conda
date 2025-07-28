@@ -20,10 +20,11 @@ RUN mkdir -p /tmpdir
 RUN /bin/tcsh -c eval `apps/fudge/checkout-fudge --checkout-dir /tmpdir --fudgetag oreo-20250402`
 RUN conda run -n env Rscript -e "install.packages('optparse', repos='https://cloud.r-project.org/')"
 RUN cp -r /tmpdir/oreo-20250402 /apps/
-RUN ls -l /apps/oreo-20250402
 RUN chmod -R 777 /apps
-RUN ls -l /apps/oreo-20250402
 ENV PYTHONPATH="${PYTHONPATH}:/apps/fudge/utils/aux:/apps/fudge/utils/bin:/apps/fudge/utils/pp:/apps/fudge/bin:/apps/fudge:/apps/fudge/utils/shared_code"
+ENV BASEDIR="/apps/oreo-20250402/fudge/" 
+ENV FUDGETAG="oreo-20250402"
+ENV FUDGE_ENV="/apps/oreo-20250402/fudge/environment_info.csh"
 RUN python -c "import sys; print(sys.path)"
 ENTRYPOINT ["/bin/tcsh"]
 CMD ["tcsh", "-i"]
