@@ -1,0 +1,24 @@
+# environment.yml
+name: env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - nco=5.1.9
+  - r=4.2
+  - cdo=2.4.0
+  - python=3.10
+  - numpy
+  - r-base # Explicitly include r-base if r=4.2 doesn't pull it as a direct dependency
+  - netcdf4
+  - vim
+  - r-optparse # Include this R package directly in the conda environment
+  - r-rlang
+  - r-ncdf4
+  - r-pcict
+  - r-udunits2
+  - r-ncdf4.helpers
+  - r-jsonlite
+  - r-plyr
+  - r-cdft
+  - r-mbc
