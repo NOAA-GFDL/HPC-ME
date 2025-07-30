@@ -45,11 +45,11 @@ stages:
 build-fudge:
   stage: build
   variables:
-    DOCKERFILE: apps/Dockerfile-fudge-conda
+    DOCKERFILE: apps/Dockerfile-fudge-conda-yml
     APP: "fudge"
     OS: debian 
     COMPILER_TYPE: none
-    COMPILER_VERSION: pistachio-202507
+    COMPILER_VERSION: pistachio-202507-yml
   <<: *buildScript
     
 build-ppp:
