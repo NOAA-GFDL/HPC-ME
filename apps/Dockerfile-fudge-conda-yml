@@ -11,40 +11,40 @@ RUN sed -i -e 's/http:/https:/g' /etc/apt/sources.list.d/debian.sources && \
 # Copy the environment.yml file into the image
 # This step should be early to leverage Docker's build cache.
 # If environment.yml doesn't change, this layer (and subsequent ones) will be cached.
-COPY environment.yml /tmp/environment.yml
+RUN mkdir -p /apps/fudge
+ 
+RUN git clone --depth 1 --branch pistachio-07301615 https://gitlab.gfdl.noaa.gov/esd/fudge.git /apps/fudge
+ 
+#COPY /home/nkz/Code/repos/fudge/environment.yml /tmp/environment.yml
 
 # Create the Conda environment using the YAML file
 # Use --file to specify the YAML path
-RUN conda env create -f /tmp/environment.yml && \
+RUN conda env create -f /apps/fudge/environment.yml && \
     conda clean --all --yes # Clean up conda cache to reduce image size
 
-RUN mkdir -p /apps/fudge
+#Active the conda environment
 SHELL ["conda", "run", "-n", "env", "/bin/tcsh", "-c"]
 
 # set shell variable for fudge
 ENV SHELL container
 
-# Clone the fudge repository
-# This RUN command will now execute within the 'env' conda environment
-RUN git clone --depth 1 --branch pistachio-07301403 https://gitlab.gfdl.noaa.gov/esd/fudge.git /apps/fudge
-
 # Create bin directory and copy checkout-fudge script
 RUN mkdir -p /home/esd/bin/ && \
     cp /apps/fudge/checkout-fudge /home/esd/bin/
-RUN ls /apps/fudge
 
 # Execute the checkout-fudge script
 RUN mkdir -p /tmpdir
-RUN /bin/tcsh -c eval `apps/fudge/checkout-fudge --checkout-dir /tmpdir --fudgetag pistachio-07301403`
+RUN /bin/tcsh -c eval `apps/fudge/checkout-fudge --checkout-dir /tmpdir --fudgetag pistachio-07301615`
 
-# Copy the checked-out fudge content
-RUN cp -r /tmpdir/pistachio-07301403 /apps/
+# Copy the checked-out fudge content and set permissions
+RUN cp -r /tmpdir/pistachio-07301615 /apps/
+RUN chmod -R 777 /apps
 
 # Set environment variables
 ENV PYTHONPATH="${PYTHONPATH}:/apps/fudge/utils/aux:/apps/fudge/utils/bin:/apps/fudge/utils/pp:/apps/fudge/bin:/apps/fudge:/apps/fudge/utils/shared_code"
-ENV BASEDIR="/apps/pistachio-07301403/fudge/"
-ENV FUDGETAG="pistachio-07301403"
-ENV FUDGE_ENV="/apps/pistachio-07301403/fudge/environment_info.csh"
+ENV BASEDIR="/apps/pistachio-07301615/fudge/"
+ENV FUDGETAG="pistachio-07301615"
+ENV FUDGE_ENV="/apps/pistachio-07301615/fudge/environment_info.csh"
 
 #R packages with no conda equivalent
 #RUN conda run -n env Rscript -e "install.packages('climodr', repos = 'https://cloud.r-project.org')"
