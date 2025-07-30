@@ -49,7 +49,7 @@ build-fudge:
     APP: "fudge"
     OS: debian 
     COMPILER_TYPE: none
-    COMPILER_VERSION: oreo-20250402
+    COMPILER_VERSION: pistachio-202507
   <<: *buildScript
     
 build-ppp:
