@@ -1,0 +1,55 @@
+# Use a specific, stable version of miniconda
+FROM continuumio/miniconda3:25.3.1-1 as builder
+
+# Set up system dependencies first
+# Combine apt-get commands for efficiency and smaller layers
+RUN sed -i -e 's/http:/https:/g' /etc/apt/sources.list.d/debian.sources && \
+    apt-get update -y && \
+    apt-get install -y --no-install-recommends csh tcsh which git && \
+    rm -rf /var/lib/apt/lists/* # Clean up apt cache to reduce image size
+
+# Copy the environment.yml file into the image
+# This step should be early to leverage Docker's build cache.
+# If environment.yml doesn't change, this layer (and subsequent ones) will be cached.
+COPY environment.yml /tmp/environment.yml
+
+# Create the Conda environment using the YAML file
+# Use --file to specify the YAML path
+RUN conda env create -f /tmp/environment.yml && \
+    conda clean --all --yes # Clean up conda cache to reduce image size
+
+RUN mkdir -p /apps/fudge
+SHELL ["conda", "run", "-n", "env", "/bin/tcsh", "-c"]
+
+# set shell variable for fudge
+ENV SHELL container
+
+# Clone the fudge repository
+# This RUN command will now execute within the 'env' conda environment
+RUN git clone --depth 1 --branch pistachio-07301403 https://gitlab.gfdl.noaa.gov/esd/fudge.git /apps/fudge
+
+# Create bin directory and copy checkout-fudge script
+RUN mkdir -p /home/esd/bin/ && \
+    cp /apps/fudge/checkout-fudge /home/esd/bin/
+RUN ls /apps/fudge
+
+# Execute the checkout-fudge script
+RUN mkdir -p /tmpdir
+RUN /bin/tcsh -c eval `apps/fudge/checkout-fudge --checkout-dir /tmpdir --fudgetag pistachio-07301403`
+
+# Copy the checked-out fudge content
+RUN cp -r /tmpdir/pistachio-07301403 /apps/
+
+# Set environment variables
+ENV PYTHONPATH="${PYTHONPATH}:/apps/fudge/utils/aux:/apps/fudge/utils/bin:/apps/fudge/utils/pp:/apps/fudge/bin:/apps/fudge:/apps/fudge/utils/shared_code"
+ENV BASEDIR="/apps/pistachio-07301403/fudge/"
+ENV FUDGETAG="pistachio-07301403"
+ENV FUDGE_ENV="/apps/pistachio-07301403/fudge/environment_info.csh"
+
+#R packages with no conda equivalent
+#RUN conda run -n env Rscript -e "install.packages('climodr', repos = 'https://cloud.r-project.org')"
+
+# Define the entrypoint and command
+ENTRYPOINT ["/bin/tcsh"] # -l makes it a login shell, sourcing .cshrc
+CMD ["tcsh","-i"] # Interactive mode
+
