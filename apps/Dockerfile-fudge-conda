@@ -4,11 +4,11 @@ RUN apt-get update -y \
  && apt-get install -y csh tcsh which 
 RUN conda create -y -n env \
  && conda install -n env conda-forge::nco=5.1.9 conda-forge::r=4.2 conda-forge::cdo=2.4.0 python=3.10 numpy \
- && conda install -n env r-base \
+ && conda install -n env r-base conda-forge::netcdf4 \
  && conda init
 RUN mkdir -p /apps/fudge \
  && cd /apps 
-RUN git clone --depth 1 --branch pistachio-07291651 https://gitlab.gfdl.noaa.gov/esd/fudge.git /apps/fudge 
+RUN git clone --depth 1 --branch pistachio-07301146 https://gitlab.gfdl.noaa.gov/esd/fudge.git /apps/fudge 
 RUN ls /apps/fudge
 RUN mkdir -p /home/esd/bin/ \
  && cp /apps/fudge/checkout-fudge /home/esd/bin/
@@ -17,14 +17,14 @@ SHELL ["/bin/tcsh", "-c"]
 RUN echo 'source activate env' >> ~/.cshrc
 ENV SHELL container 
 RUN mkdir -p /tmpdir
-RUN /bin/tcsh -c eval `apps/fudge/checkout-fudge --checkout-dir /tmpdir --fudgetag pistachio-07291651`
+RUN /bin/tcsh -c eval `apps/fudge/checkout-fudge --checkout-dir /tmpdir --fudgetag pistachio-07301146`
 RUN conda run -n env Rscript -e "install.packages('optparse', repos='https://cloud.r-project.org/')"
-RUN cp -r /tmpdir/pistachio-07291651 /apps/
+RUN cp -r /tmpdir/pistachio-07301146 /apps/
 RUN chmod -R 777 /apps
 ENV PYTHONPATH="${PYTHONPATH}:/apps/fudge/utils/aux:/apps/fudge/utils/bin:/apps/fudge/utils/pp:/apps/fudge/bin:/apps/fudge:/apps/fudge/utils/shared_code"
-ENV BASEDIR="/apps/pistachio-07291651/fudge/" 
-ENV FUDGETAG="pistachio-07291651"
-ENV FUDGE_ENV="/apps/pistachio-07291651/fudge/environment_info.csh"
+ENV BASEDIR="/apps/pistachio-07301146/fudge/" 
+ENV FUDGETAG="pistachio-07301146"
+ENV FUDGE_ENV="/apps/pistachio-07301146/fudge/environment_info.csh"
 RUN python -c "import sys; print(sys.path)"
 ENTRYPOINT ["/bin/tcsh"]
 CMD ["tcsh", "-i"]
