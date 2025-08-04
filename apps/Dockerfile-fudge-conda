@@ -2,6 +2,39 @@ FROM continuumio/miniconda3:25.3.1-1 as builder
 RUN sed -i -e 's/http:/https:/g' /etc/apt/sources.list.d/debian.sources
 RUN apt-get update -y \
  && apt-get install -y csh tcsh which 
+# Set up build dependencies for compiling Slurm
+RUN apt-get update && apt-get install -y \
+    gcc \
+    make \
+    wget \
+    libncurses-dev \
+    libmunge-dev \
+    libssl-dev \
+    libpam0g-dev \
+    libcurl4-openssl-dev \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Download Slurm source code. Make sure to use the exact version of the host (24.11.2)
+RUN wget https://download.schedmd.com/slurm/slurm-24.11.2.tar.bz2 && \
+    tar -xjf slurm-24.11.2.tar.bz2 && \
+    rm slurm-24.11.2.tar.bz2
+
+# Compile and install the Slurm client tools
+WORKDIR /slurm-24.11.2
+RUN ./configure --prefix=/usr/local --enable-developer && \
+    make -C src/api && \
+    make -C src/common && \
+    make -C src/sacct && \
+    make -C src/sbatch && \
+    make -C src/sinfo && \
+    make -C src/squeue && \
+    make -C src/srun && \
+    make -C src/scontrol && \
+    make install
+
+# Set the path to the newly compiled binaries
+ENV PATH="/usr/local/bin:$PATH"
+
 RUN conda create -y -n env \
  && conda install -n env conda-forge::nco=5.1.9 conda-forge::r=4.2 conda-forge::cdo=2.4.0 python=3.10 numpy \
  && conda install -n env r-base conda-forge::netcdf4 conda-forge::vim\
@@ -24,7 +57,7 @@ SHELL ["/bin/tcsh", "-c"]
 RUN echo 'source activate env' >> ~/.cshrc
 ENV SHELL container 
 RUN mkdir -p /tmpdir
-RUN /bin/tcsh -c eval `apps/fudge/checkout-fudge --checkout-dir /tmpdir --fudgetag pistachio-08041112`
+RUN /bin/tcsh -c eval `/apps/fudge/checkout-fudge --checkout-dir /tmpdir --fudgetag pistachio-08041112`
 RUN cp -r /tmpdir/pistachio-08041112 /apps/
 RUN chmod -R 777 /apps
 ENV PYTHONPATH="${PYTHONPATH}:/apps/fudge/utils/aux:/apps/fudge/utils/bin:/apps/fudge/utils/pp:/apps/fudge/bin:/apps/fudge:/apps/fudge/utils/shared_code"
