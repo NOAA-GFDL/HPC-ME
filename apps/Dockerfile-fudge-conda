@@ -15,7 +15,7 @@ RUN conda run -n env Rscript -e "install.packages('optparse', repos='https://clo
 RUN conda run -n env Rscript -e "install.packages('https://cran.r-project.org/src/contrib/climodr_1.0.0.tar.gz', repos=NULL, type = 'source')"
 RUN mkdir -p /apps/fudge \
  && cd /apps 
-RUN git clone --depth 1 --branch pistachio-08191705 https://gitlab.gfdl.noaa.gov/esd/fudge.git /apps/fudge 
+RUN git clone --depth 1 --branch pistachio-08200953 https://gitlab.gfdl.noaa.gov/esd/fudge.git /apps/fudge 
 RUN mkdir -p /home/esd/bin/ \
  && cp /apps/fudge/checkout-fudge /home/esd/bin/
 ENV PATH="/home/esd/bin:/apps/fudge/bin:/opt/conda/envs/env/bin:$PATH"
@@ -23,10 +23,10 @@ SHELL ["/bin/tcsh", "-c"]
 RUN echo 'source activate env' >> ~/.cshrc
 ENV SHELL container 
 RUN mkdir -p /tmpdir
-RUN /bin/tcsh -c eval `/apps/fudge/checkout-fudge --checkout-dir /tmpdir --fudgetag pistachio-08191705`
-RUN cp -r /tmpdir/pistachio-08191705 /apps/
+RUN /bin/tcsh -c eval `/apps/fudge/checkout-fudge --checkout-dir /tmpdir --fudgetag pistachio-08200953`
+RUN cp -r /tmpdir/pistachio-08200953 /apps/
 RUN chmod -R 777 /apps
-RUN mv /apps/pistachio-08191705 /apps/pistachio
+RUN mv /apps/pistachio-08200953 /apps/pistachio
 ENV PYTHONPATH="${PYTHONPATH}:/apps/fudge/utils/aux:/apps/fudge/utils/bin:/apps/fudge/utils/pp:/apps/fudge/bin:/apps/fudge:/apps/fudge/utils/shared_code"
 ENV BASEDIR="/apps/pistachio/fudge/" 
 ENV FUDGETAG="pistachio"
