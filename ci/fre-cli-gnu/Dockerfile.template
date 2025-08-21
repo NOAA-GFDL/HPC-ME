@@ -17,6 +17,9 @@
 # License along with FRE-NCTools.  If not, see
 # <http://www.gnu.org/licenses/>.
 #***********************************************************************
+# Image for fre-cli github CI testing
+# contains miniconda and build dependencies for FMS-based models
+# also includes podman and the fusefs packages for container builds
 {% extends "container/Dockerfile" %}
 {% block build_stage %}
 {{ super() }}

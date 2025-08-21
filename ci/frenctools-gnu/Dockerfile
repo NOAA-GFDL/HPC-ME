@@ -32,6 +32,7 @@ set -o noclobber \
 &&   echo '  - netcdf-c' \
 &&   echo '  - netcdf-fortran' \
 &&   echo '  - nccmp' \
+&&   echo '  - asciidoc' \
 &&   echo '  concretizer:' \
 &&   echo '    unify: true' \
 &&   echo '  packages:' \
@@ -72,7 +73,7 @@ RUN { \
 
 
 RUN dnf update -y && dnf install -y epel-release && dnf update -y \
- && dnf install -y autoconf libtool make bats git libgomp python3 python3-numpy python3-pip python3-pytest perl \
+ && dnf install -y autoconf libtool make git libgomp python3 python3-numpy python3-pip python3-pytest perl nco \
  && rm -rf /var/cache/dnf && dnf clean all
 
 # Install any needed pip packages
