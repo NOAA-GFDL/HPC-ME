@@ -84,7 +84,7 @@ fre_pp_steps () {
     check_exit_status "VALIDATE"
 
     # Install
-    echo -e "\nRunning fre pp install to instal the workflow in ${HOME}/cylc-run/${name} ... "
+    echo -e "\nRunning fre pp install to install the workflow in ${HOME}/cylc-run/${name} ... "
     fre -v pp install -e ${expname} -p ${plat} -t ${targ}
     check_exit_status "INSTALL"
 
