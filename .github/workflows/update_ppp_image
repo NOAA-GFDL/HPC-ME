@@ -6,8 +6,9 @@ on:
     branches:
       - main # Trigger on push to the main
     paths:
-      - 'Dockerfile-PPP' # Run when Dockerfile is changed
-      #- '.github/workflows/update_ppp_image' # Or if the workflow file itself is changed
+      - 'Dockerfile-ppp' # Run when Dockerfile is changed
+      - 'ppp/runscript.sh' # Run when Runscript is changed
+      - '.github/workflows/update_ppp_image' # Run if the workflow file itself is changed
 
 env:
   REGISTRY: ghcr.io
