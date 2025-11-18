@@ -1,20 +1,20 @@
-name: Update PPP Image
+name: Docker Image CI/CD
   
-# 1. Trigger the workflow
+# Trigger the workflow
 on:
   push:
     branches:
-      - main # Trigger on push to the main
+      - main # Trigger on push to the main branch
     paths:
-      - 'Dockerfile-ppp' # Run when Dockerfile is changed
-      - 'ppp/runscript.sh' # Run when Runscript is changed
-      - '.github/workflows/update_ppp_image' # Run if the workflow file itself is changed
+      - 'Dockerfile-ppp' # Only run if Dockerfile is changed
+      - 'ppp/runscript.sh'
+     - '.github/workflows/update_ppp_image.yaml' # Or if the workflow file itself is changed
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ NOAA-GFDL/HPC-ME/ppp }} # Uses 'owner/repo' as the image name
+  IMAGE_NAME: ${{ NOAA-GFDL/HPC-ME }} # Uses 'owner/repo' as the image name
 
-# 2. Define the jobs to run
+# Define the jobs to run
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -23,11 +23,11 @@ jobs:
       packages: write # Allow pushing to GitHub Packages/GHCR
 
     steps:
-      # --- Setup and Checkout ---
+      # Setup and Checkout
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # --- Determine Tags ---
+      # Determine Tags
       - name: Extract metadata (tags) for Docker
         id: meta
         uses: docker/metadata-action@v5
@@ -38,20 +38,20 @@ jobs:
             type=raw,value=latest,enable=true
             type=ref,event=branch,enable=${{ github.ref == 'refs/heads/main' }} # 'main' branch gets a branch tag
 
-      # --- Login to GHCR ---
+      # Login to GHCR
       - name: Log in to the Container registry
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }} # Use the built-in GITHUB_TOKEN
+          password: ${{ secrets.GITHUB_TOKEN }
 
-      # --- Build and Push ---
+      # Build and Push
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: . # Directory containing the Dockerfile
+          context: . # Directory containing the Dockerfilei
+          file: ./Dockerfile-ppp
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-
