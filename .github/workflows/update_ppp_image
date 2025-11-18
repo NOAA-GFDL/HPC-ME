@@ -12,7 +12,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ NOAA-GFDL/HPC-ME }} # Uses 'owner/repo' as the image name
+  IMAGE_NAME: ${{ NOAA-GFDL/HPC-ME/ppp }} # Uses 'owner/repo' as the image name
 
 # Define the jobs to run
 jobs:
