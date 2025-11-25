@@ -5,14 +5,15 @@ on:
   push:
     branches:
       - main # Trigger on push to the main branch
+    # Build container if these files are changed
     paths:
-      - 'Dockerfile-ppp' # Only run if Dockerfile is changed
+      - 'Dockerfile-ppp'
       - 'ppp/runscript.sh'
-     - '.github/workflows/update_ppp_image.yaml' # Or if the workflow file itself is changed
+     - '.github/workflows/update_ppp_image.yaml' # Or if the workflow file itself is change
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ NOAA-GFDL/HPC-ME/ppp }} # Uses 'owner/repo' as the image name
+  IMAGE_NAME: ${{ NOAA-GFDL/HPC-ME/ppp }}
 
 # Define the jobs to run
 jobs:
