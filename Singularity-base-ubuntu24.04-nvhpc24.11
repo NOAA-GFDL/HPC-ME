@@ -1,0 +1,265 @@
+Bootstrap: docker
+From: nvcr.io/nvidia/nvhpc:24.11-devel-cuda12.6-ubuntu24.04
+
+%post
+    ####################################################################################################
+    # Singularity definition file for building a scientific HPC base image on Ubuntu 24.04 with NVIDIA Grace Hopper (ARM64)
+    #
+    # - Base image: nvcr.io/nvidia/nvhpc:24.11-devel-cuda12.6-ubuntu24.04 (AArch64, CUDA 12.6, NVHPC 24.11)
+    # - Installs essential build tools, Python 3, and scientific libraries
+    # - Clones and bootstraps Spack (v0.23.1) for flexible package management
+    # - Configures Spack environment with mirrors for faster binary installs and externalizes system tools
+    # - Defines a spack.yaml for reproducible builds and environment management
+    # - Installs core libraries (zlib, zlib-ng, libyaml), MPI stack (OpenMPI), HDF5, NetCDF, and scientific packages
+    # - Sets up environment variables for compilers and CUDA
+    # - Uses Spack buildcache where possible for efficiency; falls back to source builds if needed
+    #
+    # Intended for use as a base image for scientific/HPC workflows targeting NVIDIA Grace Hopper platforms.
+    ####################################################################################################
+
+    ############## Set up build environment#################
+    # Add packages needed for building software stack 
+    sed -i -e 's/http:/https:/g' /etc/apt/sources.list.d/ubuntu.sources
+    apt-get update -y
+    apt-get upgrade -y
+    apt-get install -y python3 python3-dev python3-pip python3-venv python3-setuptools \
+        autoconf automake libtool cmake autoconf-archive build-essential wget git curl \
+        gfortran libblas-dev liblapack-dev pkg-config
+    ln -sf /usr/bin/python3 /usr/bin/python
+    python --version
+
+    ## Clone spack and setup environment
+    mkdir -p /opt && cd /opt && git clone -b v0.23.1 https://github.com/spack/spack.git
+
+    # Verify Python is working and set up environment
+    python --version && which python && python -c "import sys; print(sys.version)"
+    echo "PATH: $PATH"
+    echo "NVHPC_ROOT: $NVHPC_ROOT"
+    nvcc --version || echo "nvcc not found"
+    nvc --version || echo "nvc not found"
+
+    # Bootstrap Spack (download core dependencies)
+    . /opt/spack/share/spack/setup-env.sh && spack bootstrap now
+
+    # Add buildcache mirrors for faster builds
+    . /opt/spack/share/spack/setup-env.sh && \
+        spack mirror add spack-public https://binaries.spack.io/releases/v0.23 && \
+        spack mirror add e4s-arm https://cache.e4s.io/23.11/arm64 && \
+        spack buildcache keys --install --trust
+
+    # Create spack.yaml configuration
+    mkdir -p /opt/spack-environment
+    cat > /opt/spack-environment/spack.yaml << 'EOF'
+spack:
+  mirrors:
+    spack-public: https://binaries.spack.io/releases/v0.23
+    e4s-arm: https://cache.e4s.io/23.11/arm64
+  definitions:
+  - packages_builtin:
+    - bacio%nvhpc@24.11
+    - hdf5@1.14.3%nvhpc@24.11+fortran+hl+szip~mpi
+    - ip%nvhpc@24.11
+    - libyaml@0.2.5%nvhpc@24.11
+    - nccmp@1.9.1.0%nvhpc@24.11
+    - netcdf-c@4.9.2%nvhpc@24.11~mpi~dap
+    - netcdf-fortran@4.6.1%nvhpc@24.11
+    - sp@2.3.3%nvhpc@24.11
+    - w3emc@2.11.0%nvhpc@24.11
+    - w3nco@2.4.1%nvhpc@24.11
+    - zlib%nvhpc@24.11
+    - zlib-ng@2.1.4%nvhpc@24.11
+    - cuda@12.6.0
+  packages:
+    cuda:
+      externals:
+      - spec: "cuda@12.6.0"
+        prefix: "/opt/nvidia/hpc_sdk/Linux_aarch64/24.11/cuda"
+      buildable: False
+    nvhpc:
+      externals:
+      - spec: "nvhpc@24.11"
+        prefix: "/opt/nvidia/hpc_sdk/Linux_aarch64/24.11/compilers"
+      buildable: False
+    hdf5:
+      variants: +fortran+hl+szip~mpi
+    netcdf-c:
+      variants: ~dap~mpi
+    pango:
+      variants: +X
+    cmake:
+      externals:
+      - spec: "cmake@3.28.3"
+        prefix: "/usr"
+      buildable: False
+    automake:
+      externals:
+      - spec: "automake@1.16.5"
+        prefix: "/usr"
+      buildable: False
+    binutils:
+      externals:
+      - spec: "binutils@2.42"
+        prefix: "/usr"
+      buildable: False
+    diffutils:
+      externals:
+      - spec: "diffutils@3.10"
+        prefix: "/usr"
+      buildable: False
+    gmake:
+      externals:
+      - spec: "gmake@4.3"
+        prefix: "/usr"
+      buildable: False
+    libtool:
+      externals:
+      - spec: "libtool@2.4.7"
+        prefix: "/usr"
+      buildable: False
+    m4:
+      externals:
+      - spec: "m4@1.4.19"
+        prefix: "/usr"
+      buildable: False
+    perl:
+      externals:
+      - spec: "perl@5.38.2"
+        prefix: "/usr"
+      buildable: False
+    tar:
+      externals:
+      - spec: "tar@1.35"
+        prefix: "/usr"
+      buildable: False
+    libiconv:
+      externals:
+      - spec: "libiconv@1.17"
+        prefix: "/usr"
+      buildable: False
+    pkgconf:
+      externals:
+      - spec: "pkgconf@1.8.1"
+        prefix: "/usr"
+      buildable: False
+    xz:
+      externals:
+      - spec: "xz@5.4.5"
+        prefix: "/usr"
+      buildable: False
+    all:
+      target: [aarch64]
+      providers:
+        zlib-api: [zlib-ng+compat, zlib]
+      compiler: [nvhpc@24.11]
+  specs:
+  - matrix:
+    - [$packages_builtin]
+  concretizer:
+    unify: True
+  config:
+    install_tree: /opt/software
+    build_stage: /tmp/spack-stage
+    misc_cache: /tmp/spack-cache
+    build_jobs: 4
+  compilers:
+  - compiler:
+      spec: gcc@13.2.0
+      paths:
+        cc: /usr/bin/gcc
+        cxx: /usr/bin/g++
+        f77: /usr/bin/gfortran
+        fc: /usr/bin/gfortran
+      flags: {}
+      operating_system: ubuntu24.04
+      target: aarch64
+      modules: []
+      environment: {}
+      extra_rpaths: []
+  view: /opt/views/view
+EOF
+
+    # Setup compilers
+    . /opt/spack/share/spack/setup-env.sh && \
+        cd /opt/spack-environment && \
+        spack env activate . && \
+        spack compiler add
+
+    # Install external packages first (CUDA, NVHPC)
+    . /opt/spack/share/spack/setup-env.sh && \
+        cd /opt/spack-environment && \
+        spack env activate . && \
+        spack install cuda nvhpc
+
+    # Install core system libraries
+    . /opt/spack/share/spack/setup-env.sh && \
+        cd /opt/spack-environment && \
+        spack env activate . && \
+        spack install --use-buildcache=package:auto,dependencies:auto \
+            zlib zlib-ng libyaml
+
+    # Install HDF5 and NetCDF I/O stack with checksum disabled due to upstream changes
+    . /opt/spack/share/spack/setup-env.sh && \
+        cd /opt/spack-environment && \
+        spack env activate . && \
+        spack config add config:checksum:false && \
+        spack install --use-buildcache=package:auto,dependencies:auto \
+            hdf5 netcdf-c~dap netcdf-fortran && \
+        spack config remove config:checksum:false
+
+    # Install remaining scientific packages
+    . /opt/spack/share/spack/setup-env.sh && \
+        cd /opt/spack-environment && \
+        spack env activate . && \
+        spack install --use-buildcache=package:auto,dependencies:auto || true && \
+        spack gc -y
+
+    # Install NOAA/NCEP libraries with retry logic
+    . /opt/spack/share/spack/setup-env.sh && \
+        cd /opt/spack-environment && \
+        spack env activate . && \
+        (spack install bacio%nvhpc@24.11 || echo "bacio failed to install") && \
+        (spack install ip%nvhpc@24.11 || echo "ip failed to install") && \
+        (spack install sp@2.3.3%nvhpc@24.11 || echo "sp failed to install") && \
+        (spack install w3emc@2.11.0%nvhpc@24.11 || echo "w3emc failed to install") && \
+        (spack install w3nco@2.4.1%nvhpc@24.11 || echo "w3nco failed to install") && \
+        (spack install nccmp@1.9.1.0%nvhpc@24.11 || echo "nccmp failed to install") && \
+        spack gc -y
+
+%environment
+    export LD_LIBRARY_PATH=/opt/views/view/lib:$LD_LIBRARY_PATH
+    export LIBRARY_PATH=/opt/views/view/lib:$LIBRARY_PATH
+    export PATH=/opt/views/view/bin:$PATH
+    export CUDA_HOME=/opt/nvidia/hpc_sdk/Linux_aarch64/24.11/cuda
+    export NVHPC_ROOT=/opt/nvidia/hpc_sdk/Linux_aarch64/24.11/compilers
+
+%runscript
+    exec /bin/bash "$@"
+
+%labels
+    Author Thomas.Robinson
+    Version v1.0
+    Description Scientific HPC base image for NVIDIA Grace Hopper (ARM64) with NVHPC compilers and NOAA/NCEP libraries
+    Base nvcr.io/nvidia/nvhpc:24.11-devel-cuda12.6-ubuntu24.04
+
+%help
+    This Singularity container provides a scientific HPC base image for NVIDIA Grace Hopper (ARM64) platforms.
+    
+    Included software:
+    - NVIDIA HPC SDK 24.11 with NVHPC compilers and CUDA 12.6
+    - Spack package manager (v0.23.1) for flexible software management
+    - HDF5 1.14.3 with Fortran bindings and high-level API
+    - NetCDF-C 4.9.2 and NetCDF-Fortran 4.6.1 (without DAP support)
+    - NOAA/NCEP libraries: bacio, ip, sp, w3emc, w3nco, nccmp
+    - Compression libraries: zlib, zlib-ng, bzip2, zstd, lz4, snappy, c-blosc
+    - System utilities built with NVHPC for nvfortran compatibility
+    
+    Environment:
+    - Libraries available in: /opt/views/view/lib
+    - Executables available in: /opt/views/view/bin
+    - CUDA_HOME: /opt/nvidia/hpc_sdk/Linux_aarch64/24.11/cuda
+    - NVHPC_ROOT: /opt/nvidia/hpc_sdk/Linux_aarch64/24.11/compilers
+    
+    Usage:
+    singularity shell <container>
+    singularity exec <container> <command>
+    singularity run <container>
