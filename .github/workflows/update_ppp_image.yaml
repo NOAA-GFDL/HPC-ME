@@ -9,7 +9,7 @@ on:
     paths:
       - 'Dockerfile-ppp'
       - 'ppp/runscript.sh'
-     - '.github/workflows/update_ppp_image.yaml' # Or if the workflow file itself is change
+      - '.github/workflows/update_ppp_image.yaml' # Or if the workflow file itself is change
 
 env:
   REGISTRY: ghcr.io
