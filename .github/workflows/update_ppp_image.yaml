@@ -9,11 +9,11 @@ on:
     paths:
       - 'Dockerfile-ppp'
       - 'ppp/runscript.sh'
-      - '.github/workflows/update_ppp_image.yaml' # Or if the workflow file itself is change
+      - '.github/workflows/update_ppp_image.yaml' # Or if the workflow file itself is changed
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ NOAA-GFDL/HPC-ME/ppp }}
+  IMAGE_NAME: "NOAA-GFDL/HPC-ME/ppp"
 
 # Define the jobs to run
 jobs:
@@ -45,7 +45,7 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       # Build and Push
       - name: Build and push Docker image
