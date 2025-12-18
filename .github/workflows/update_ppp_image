@@ -37,7 +37,7 @@ jobs:
           tags: |
             type=sha,prefix=sha-,value=${{ github.sha }},enable=true,priority=1000
             type=raw,value=latest,enable=true
-            type=ref,event=branch,enable=${{ github.ref == 'refs/heads/main' }} # 'main' branch gets a branch tag
+            type=raw,value=2025.04,enable=true #Adding fre-cli tag manually for now
 
       # Login to GHCR
       - name: Log in to the Container registry
