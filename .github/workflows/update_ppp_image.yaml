@@ -9,7 +9,8 @@ on:
     paths:
       - 'Dockerfile-ppp'
       - 'ppp/runscript.sh'
-      - '.github/workflows/update_ppp_image.yaml' # Or if the workflow file itself is changed
+      - 'ppp/cylc-flow-tools.yaml'
+      - '.github/workflows/update_ppp_image.yaml'
 
 env:
   REGISTRY: ghcr.io
@@ -51,7 +52,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: . # Directory containing the Dockerfilei
+          context: . # Directory containing the Dockerfile
           file: ./Dockerfile-ppp
           push: true
           tags: ${{ steps.meta.outputs.tags }}
