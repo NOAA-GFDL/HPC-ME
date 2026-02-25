@@ -15,7 +15,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: "NOAA-GFDL/HPC-ME/ppp"
+  IMAGE_NAME: "noaa-gfdl/hpc-me/ppp"
 
 jobs:
   build-and-push:
