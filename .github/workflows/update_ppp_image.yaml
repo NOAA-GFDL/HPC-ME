@@ -3,7 +3,8 @@ name: Docker Image CI/CD
 on:
   push:
     branches:
-      - main
+      - main #  Trigger on push to the main branch
+    # Build container if these files are changed
     paths:
       - 'Dockerfile-ppp'
       - 'ppp/runscript.sh'
@@ -49,7 +50,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: . # Directory containing the Dockerfile
           file: ./Dockerfile-ppp
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.set_tag.outputs.docker_tag }}
