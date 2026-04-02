@@ -1,0 +1,105 @@
+FROM intel/oneapi-hpckit:2025.3.0-0-devel-ubuntu24.04 as builder
+LABEL maintainer="HPC-ME Development"
+
+############## Set up build environment#################
+RUN sed -i -e 's/http:/https:/g' /etc/apt/sources.list.d/ubuntu.sources 2>/dev/null || true
+RUN apt-get update -y \
+ && apt-get upgrade -y \
+ && apt-get install -y --no-install-recommends \
+    patch \
+    xz-utils \
+ && rm -rf /var/lib/apt/lists/*
+
+# Install Intel OneAPI 2025.3.1 C/C++ compilers
+# The base image (2025.3.0) only has Fortran. We manually install C/C++ compilers from 2025.3.1
+RUN mkdir -p /tmp/oneapi-install && cd /tmp/oneapi-install && \
+    apt-get update && apt-get install -y wget && \
+    wget -q https://registrationcenter-download.intel.com/akdlm/oneapi/components/debs/intel-oneapi-compiler-c-2025.3.1_2025.3.1.tar.gz && \
+    wget -q https://registrationcenter-download.intel.com/akdlm/oneapi/components/debs/intel-oneapi-compiler-dpcpp-cpp-2025.3.1_2025.3.1.tar.gz && \
+    tar -xzf intel-oneapi-compiler-c-2025.3.1_2025.3.1.tar.gz && \
+    tar -xzf intel-oneapi-compiler-dpcpp-cpp-2025.3.1_2025.3.1.tar.gz && \
+    dpkg -i -R intel-oneapi-compiler-c-* intel-oneapi-compiler-dpcpp-cpp-* 2>&1 | grep -v "unmet dependencies" || true && \
+    apt-get install -y -f 2>&1 || true && \
+    cd / && rm -rf /tmp/oneapi-install && apt-get clean
+
+# Clone Spack v1.1.0
+RUN mkdir -p /opt && cd /opt && \
+    git clone -b v1.1.0 https://github.com/spack/spack.git
+
+# Initialize Spack environment
+RUN mkdir -p /opt/spack-environment && \
+    cd /opt/spack-environment && \
+    . /opt/spack/share/spack/setup-env.sh && \
+    spack env create --dir .
+
+# Configure externals for Intel OneAPI compilers and libraries
+RUN cd /opt/spack-environment && \
+    . /opt/spack/share/spack/setup-env.sh && \
+    spack env activate . && \
+    spack external find --all --scope=site cmake git wget ca-certificates python ncurses readline zlib bzip2 openssl libedit libffi && \
+    { echo "  packages:"; \
+      echo "    intel-oneapi-compilers:"; \
+      echo "      externals:"; \
+      echo "      - spec: intel-oneapi-compilers@2025.3.0"; \
+      echo "        prefix: /opt/intel/oneapi"; \
+      echo "        extra_attributes:"; \
+      echo "          compilers:"; \
+      echo "            fortran: /opt/intel/oneapi/compiler/2025.3/bin/ifx"; \
+      echo "            c: /opt/intel/oneapi/compiler/2025.3/bin/icx"; \
+      echo "            cxx: /opt/intel/oneapi/compiler/2025.3/bin/icpx"; \
+      echo "    intel-oneapi-mkl:"; \
+      echo "      externals:"; \
+      echo "      - spec: intel-oneapi-mkl@2025.3.0"; \
+      echo "        prefix: /opt/intel/oneapi"; \
+    } >> spack.yaml
+
+# Configure Spack environment
+RUN cd /opt/spack-environment && \
+    . /opt/spack/share/spack/setup-env.sh && \
+    spack env activate .
+
+# Add specs using spack add command
+RUN cd /opt/spack-environment && \
+    . /opt/spack/share/spack/setup-env.sh && \
+    spack env activate . && \
+    spack add 'bacio %oneapi@2025.3.0' && \
+    spack add 'hdf5 +fortran +hl +szip ~mpi %oneapi@2025.3.0' && \
+    spack add 'libyaml %oneapi@2025.3.0' && \
+    spack add 'nccmp %oneapi@2025.3.0' && \
+    spack add 'netcdf-c ~mpi %oneapi@2025.3.0' && \
+    spack add 'netcdf-fortran %oneapi@2025.3.0' && \
+    spack add 'sp %oneapi@2025.3.0' && \
+    spack add 'w3emc %oneapi@2025.3.0' && \
+    spack add 'w3nco %oneapi@2025.3.0' && \
+    spack add 'zlib %oneapi@2025.3.0' && \
+    spack add 'zlib-ng %oneapi@2025.3.0'
+
+# Discover compiler and concretize dependencies
+RUN cd /opt/spack-environment && \
+    . /opt/spack/share/spack/setup-env.sh && \
+    spack env activate . && \
+    spack compiler find && \
+    spack compiler add /opt/intel/oneapi/compiler/2025.3 && \
+    spack concretize -f
+
+# Install all packages
+RUN cd /opt/spack-environment && \
+    . /opt/spack/share/spack/setup-env.sh && \
+    spack env activate . && \
+    spack install --fail-fast -j 4 && \
+    spack gc -y || \
+    (mkdir -p /opt/build-logs && \
+     find /tmp -name "spack-build-out.txt" -o -name "config.log" | xargs -I {} cp {} /opt/build-logs/ 2>/dev/null; \
+     exit 1)
+
+FROM intel/oneapi-runtime:2025.3.0-0-devel-ubuntu24.04 as final
+LABEL maintainer="HPC-ME Development"
+
+# Copy installed packages from builder
+COPY --from=builder /opt/spack-environment /opt/spack-environment
+COPY --from=builder /opt/spack/opt/spack /opt/spack/opt/spack
+# Setup environment
+ENV LD_LIBRARY_PATH=/opt/intel/oneapi/redist/lib:/opt/spack-environment/.spack-env/view/lib
+ENV LIBRARY_PATH=/opt/intel/oneapi/redist/lib:/opt/spack-environment/.spack-env/view/lib
+ENV PATH=/opt/spack-environment/.spack-env/view/bin
+ENTRYPOINT [ "/bin/bash" ]

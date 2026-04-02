@@ -1,0 +1,11 @@
+default:
+  tags: [hpc-me]
+
+stages:
+  - maintenance
+
+weekly-deep-clean:
+  stage: maintenance
+  script:
+    - echo "Running scheduled weekly deep clean of Podman storage..."
+    - podman system prune --all --force --volumes

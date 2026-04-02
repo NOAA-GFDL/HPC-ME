@@ -1,0 +1,139 @@
+workflow:
+  auto_cancel:
+    on_new_commit: interruptible
+
+# use yaml anchor for the script as script cannot inherit
+.buildScript: &buildScript
+  script:
+    - podman build
+        --build-arg BUILD_DATE=$CI_COMMIT_TIMESTAMP
+        --build-arg BUILD_REPO=$DOCKER_ENV_CI_PROJECT_URL
+        --build-arg BUILD_REPO_REF=$CI_COMMIT_SHA
+        --file "${DOCKERFILE}"
+        --tag "${IMAGE}" .
+    - podman push "${IMAGE}"
+
+.buildRules:
+  rules:
+  - when: always
+
+default:
+  tags: [hpc-me]
+  before_script:
+    - env
+    - |
+      # Configure Podman to use Docker Hub for short names
+      mkdir -p /home/oar.gfdl.fre_test/.config/containers/registries.conf.d
+      cat > /home/oar.gfdl.fre_test/.config/containers/registries.conf.d/shortnames.conf <<EOF
+      unqualified-search-registries = ["docker.io"]
+      short-name-mode = "permissive"
+      EOF
+    - podman login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+
+variables:
+  IMAGE: $CI_REGISTRY_IMAGE/$APP-$OS-$COMPILER_TYPE:$COMPILER_VERSION
+  SECURE_LOG_LEVEL: debug
+  CS_SEVERITY_THRESHOLD: MEDIUM
+  CS_ANALYZER_IMAGE: registry.gitlab.com/security-products/container-scanning:4
+
+stages:
+  - build
+  - cleanup
+
+build-ubuntu24.04-intel2025:
+  stage: build
+  extends: .buildRules
+  variables:
+    DOCKERFILE: Dockerfile-base-ubuntu24.04-intel2025.3
+    APP: "base"
+    OS: ubuntu24.04
+    COMPILER_TYPE: intel
+    COMPILER_VERSION: 2025.3
+  <<: *buildScript
+
+build-ubuntu24.04-intel2025-rte:
+  stage: build
+  extends: .buildRules
+  variables:
+    DOCKERFILE: Dockerfile-base-ubuntu24.04-intel2025.3rte
+    APP: "base"
+    OS: ubuntu24.04
+    COMPILER_TYPE: intel
+    COMPILER_VERSION: 2025.3rte
+  <<: *buildScript
+
+build-rockylinux9-intel2025:
+  stage: build
+  extends: .buildRules
+  variables:
+    DOCKERFILE: Dockerfile-base-rockylinux9-intel2025.3
+    APP: "base"
+    OS: rockylinux9
+    COMPILER_TYPE: intel
+    COMPILER_VERSION: 2025.3
+  <<: *buildScript
+
+build-rockylinux9-intel2025-rte:
+  stage: build
+  extends: .buildRules
+  variables:
+    DOCKERFILE: Dockerfile-base-rockylinux9-intel2025.3rte
+    APP: "base"
+    OS: rockylinux9
+    COMPILER_TYPE: intel
+    COMPILER_VERSION: 2025.3rte
+  <<: *buildScript
+
+build-ubuntu24.04-nvhpc25.11:
+  stage: build
+  extends: .buildRules
+  variables:
+    DOCKERFILE: Dockerfile-base-ubuntu24.04-nvhpc25.11
+    APP: "base"
+    OS: ubuntu24.04
+    COMPILER_TYPE: nvhpc
+    COMPILER_VERSION: 25.11
+  <<: *buildScript
+
+build-ubuntu24.04-nvhpc25.11-rte:
+  stage: build
+  extends: .buildRules
+  variables:
+    DOCKERFILE: Dockerfile-base-ubuntu24.04-nvhpc25.11-rte
+    APP: "base"
+    OS: ubuntu24.04
+    COMPILER_TYPE: nvhpc
+    COMPILER_VERSION: 25.11rte
+  <<: *buildScript
+
+build-rockylinux9-nvhpc25.11:
+  stage: build
+  extends: .buildRules
+  variables:
+    DOCKERFILE: Dockerfile-base-rockylinux9-nvhpc25.11
+    APP: "base"
+    OS: rockylinux9
+    COMPILER_TYPE: nvhpc
+    COMPILER_VERSION: 25.11
+  <<: *buildScript
+
+build-rockylinux9-nvhpc25.11-rte:
+  stage: build
+  extends: .buildRules
+  variables:
+    DOCKERFILE: Dockerfile-base-rockylinux9-nvhpc25.11-rte
+    APP: "base"
+    OS: rockylinux9
+    COMPILER_TYPE: nvhpc
+    COMPILER_VERSION: 25.11rte
+  <<: *buildScript
+
+pipeline-cleanup:
+  stage: cleanup
+  script:
+    - echo "Cleaning up cached Podman images after builds"
+    - podman rmi -a -f
+    - podman system prune --external --force
+    - podman system prune --all --force 
+  rules:
+    - when: on_success
