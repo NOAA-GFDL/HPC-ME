@@ -1,0 +1,115 @@
+# Build stage with Spack and Intel oneAPI
+FROM intel/oneapi-hpckit:2025.3.0-0-devel-rockylinux9 as builder
+
+# Install core build dependencies
+RUN dnf update -y && \
+    dnf install -y --setopt=install_weak_deps=False \
+        patch \
+        xz \
+        make \
+        file \
+        bzip2-devel \
+        libcurl-devel \
+        libedit-devel \
+        libffi-devel \
+        gmp-devel \
+        libmpc-devel \
+        mpfr-devel \
+        ncurses-devel \
+        pkg-config \
+        python3 \
+        python3-devel \
+        readline-devel \
+        openssl-devel \
+        xz-devel \
+        zlib-devel && \
+    dnf clean all
+
+# Install Intel OneAPI 2025.3.1 C/C++ compilers
+# The base image (2025.3.0) only has Fortran. We manually install C/C++ compilers from 2025.3.1
+RUN mkdir -p /tmp/oneapi-install && cd /tmp/oneapi-install && \
+    dnf install -y wget && \
+    wget -q https://registrationcenter-download.intel.com/akdlm/oneapi/components/rpms/intel-oneapi-compiler-c-2025.3.1-19.tar.gz && \
+    wget -q https://registrationcenter-download.intel.com/akdlm/oneapi/components/rpms/intel-oneapi-compiler-dpcpp-cpp-2025.3.1-19.tar.gz && \
+    tar -xzf intel-oneapi-compiler-c-2025.3.1-19.tar.gz && \
+    tar -xzf intel-oneapi-compiler-dpcpp-cpp-2025.3.1-19.tar.gz && \
+    dnf install -y ./intel-oneapi-compiler-c-*/*.rpm ./intel-oneapi-compiler-dpcpp-cpp-*/*.rpm || true && \
+    cd / && rm -rf /tmp/oneapi-install
+
+# Install Spack v1.1.0
+RUN git clone -c feature.manyObjectsThreshold=false -b v1.1.0 https://github.com/spack/spack.git /opt/spack
+
+# Initialize Spack environment
+RUN mkdir -p /opt/spack-environment && \
+    cd /opt/spack-environment && \
+    . /opt/spack/share/spack/setup-env.sh && \
+    spack env create --dir .
+
+# Configure externals for Intel OneAPI compilers and libraries
+RUN cd /opt/spack-environment && \
+    . /opt/spack/share/spack/setup-env.sh && \
+    spack env activate . && \
+    spack external find --all --scope=site cmake git wget ca-certificates python ncurses readline zlib bzip2 openssl libedit libffi && \
+    { echo "  packages:"; \
+      echo "    intel-oneapi-compilers:"; \
+      echo "      externals:"; \
+      echo "      - spec: intel-oneapi-compilers@2025.3.0"; \
+      echo "        prefix: /opt/intel/oneapi"; \
+      echo "        extra_attributes:"; \
+      echo "          compilers:"; \
+      echo "            fortran: /opt/intel/oneapi/compiler/2025.3/bin/ifx"; \
+      echo "            c: /opt/intel/oneapi/compiler/2025.3/bin/icx"; \
+      echo "            cxx: /opt/intel/oneapi/compiler/2025.3/bin/icpx"; \
+      echo "    intel-oneapi-mkl:"; \
+      echo "      externals:"; \
+      echo "      - spec: intel-oneapi-mkl@2025.3.0"; \
+      echo "        prefix: /opt/intel/oneapi"; \
+    } >> spack.yaml
+
+# Configure Spack environment
+RUN cd /opt/spack-environment && \
+    . /opt/spack/share/spack/setup-env.sh && \
+    spack env activate .
+
+# Add packages with oneapi compiler  
+RUN cd /opt/spack-environment && \
+    . /opt/spack/share/spack/setup-env.sh && \
+    spack env activate . && \
+    spack add 'bacio %oneapi@2025.3.0' && \
+    spack add 'hdf5 +fortran +hl +szip ~mpi %oneapi@2025.3.0' && \
+    spack add 'libyaml %oneapi@2025.3.0' && \
+    spack add 'nccmp %oneapi@2025.3.0' && \
+    spack add 'netcdf-c ~mpi %oneapi@2025.3.0' && \
+    spack add 'netcdf-fortran %oneapi@2025.3.0' && \
+    spack add 'sp %oneapi@2025.3.0' && \
+    spack add 'w3emc %oneapi@2025.3.0' && \
+    spack add 'w3nco %oneapi@2025.3.0' && \
+    spack add 'zlib %oneapi@2025.3.0' && \
+    spack add 'zlib-ng %oneapi@2025.3.0'
+
+# Discover compiler and concretize dependencies
+RUN cd /opt/spack-environment && \
+    . /opt/spack/share/spack/setup-env.sh && \
+    spack env activate . && \
+    spack compiler find && \
+    spack compiler add /opt/intel/oneapi/compiler/2025.3 && \
+    spack concretize -f
+
+# Install all packages
+RUN cd /opt/spack-environment && \
+    . /opt/spack/share/spack/setup-env.sh && \
+    spack env activate . && \
+    spack install --fail-fast -j 4 && \
+    spack gc -y || \
+    (mkdir -p /opt/build-logs && \
+     find /tmp -name "spack-build-out.txt" -o -name "config.log" | xargs -I {} cp {} /opt/build-logs/ 2>/dev/null; \
+     exit 1)
+
+# Set environment variables for runtime
+RUN echo "source /opt/spack-environment/.spack-env/view/etc/profile.d/z10_spack_environment.sh" >> /opt/spack-setup.sh
+ENV LD_LIBRARY_PATH=/opt/spack-environment/.spack-env/view/lib:/opt/spack-environment/.spack-env/view/lib64:$LD_LIBRARY_PATH \
+    LIBRARY_PATH=/opt/spack-environment/.spack-env/view/lib:/opt/spack-environment/.spack-env/view/lib64:$LIBRARY_PATH \
+    PATH=/opt/spack-environment/.spack-env/view/bin:$PATH
+
+WORKDIR /opt/work
+ENTRYPOINT ["/bin/bash"]

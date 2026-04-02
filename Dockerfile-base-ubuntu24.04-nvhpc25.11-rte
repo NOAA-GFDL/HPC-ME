@@ -1,0 +1,123 @@
+ARG CUDA_VERSION=13.0
+ARG NVHPC_VERSION=25.11
+ARG UBUNTU_VERSION=24.04
+
+# Build stage with Spack and NVHPC
+FROM nvcr.io/nvidia/nvhpc:${NVHPC_VERSION}-devel-cuda${CUDA_VERSION}-ubuntu${UBUNTU_VERSION} as builder
+
+# Install core build dependencies
+RUN sed -i -e 's/http:/https:/g' /etc/apt/sources.list.d/ubuntu.sources
+RUN apt-get update -y && \
+    apt-get install -y --no-install-recommends \
+        patch \
+        xz-utils \
+        file \
+        libbz2-dev \
+        libc6-dev \
+        libcurl4-openssl-dev \
+        libedit-dev \
+        libffi-dev \
+        libgmp-dev \
+        libmpc-dev \
+        libmpfr-dev \
+        libncurses-dev \
+        libpthread-stubs0-dev \
+        libreadline-dev \
+        libssl-dev \
+        libblas-dev \
+        liblapack-dev \
+        pkg-config \
+        python3 \
+        python3-dev \
+        unzip \
+        zlib1g-dev && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install Spack v1.1.0
+RUN git clone -c feature.manyObjectsThreshold=false -b v1.1.0 https://github.com/spack/spack.git /opt/spack
+
+# Initialize Spack environment
+RUN mkdir -p /opt/spack-environment && \
+    cd /opt/spack-environment && \
+    . /opt/spack/share/spack/setup-env.sh && \
+    spack env create --dir .
+
+# Configure externals for NVIDIA NVHPC compilers and libraries
+RUN cd /opt/spack-environment && \
+    . /opt/spack/share/spack/setup-env.sh && \
+    spack env activate . && \
+    spack external find --all --scope=site cmake git wget ca-certificates python ncurses readline zlib bzip2 openssl libedit libffi
+
+# Configure Spack environment
+RUN cd /opt/spack-environment && \
+    . /opt/spack/share/spack/setup-env.sh && \
+    spack env activate .
+
+# Add packages with nvhpc compiler
+RUN cd /opt/spack-environment && \
+    . /opt/spack/share/spack/setup-env.sh && \
+    spack env activate . && \
+    spack add 'gmake %gcc' && \
+    spack add 'zlib %gcc' && \
+    spack add 'zlib-ng %gcc' && \
+    spack add 'libyaml %nvhpc@25.11' && \
+    spack add 'bacio %nvhpc@25.11' && \
+    spack add 'hdf5 +fortran +hl +szip ~mpi %nvhpc@25.11' && \
+    spack add 'nccmp %nvhpc@25.11' && \
+    spack add 'netcdf-c ~mpi %nvhpc@25.11' && \
+    spack add 'netcdf-fortran %nvhpc@25.11' && \
+    spack add 'sp %nvhpc@25.11' && \
+    spack add 'w3emc %nvhpc@25.11' && \
+    spack add 'w3nco %nvhpc@25.11'
+
+# Discover compiler and concretize dependencies
+RUN cd /opt/spack-environment && \
+    . /opt/spack/share/spack/setup-env.sh && \
+    spack env activate . && \
+    spack compiler find && \
+    spack compiler add /opt/nvidia/hpc_sdk/Linux_x86_64/25.11/compilers && \
+    spack concretize -f
+
+# Install all packages
+RUN cd /opt/spack-environment && \
+    . /opt/spack/share/spack/setup-env.sh && \
+    spack env activate . && \
+    spack install --fail-fast -j 4 && \
+    spack gc -y || \
+    (mkdir -p /opt/build-logs && \
+     find /tmp -name "spack-build-out.txt" -o -name "config.log" | xargs -I {} cp {} /opt/build-logs/ 2>/dev/null; \
+     exit 1)
+
+# Set environment variables for runtime
+RUN echo "source /opt/spack-environment/.spack-env/view/etc/profile.d/z10_spack_environment.sh" >> /opt/spack-setup.sh
+ENV LD_LIBRARY_PATH=/opt/spack-environment/.spack-env/view/lib:/opt/spack-environment/.spack-env/view/lib64:$LD_LIBRARY_PATH \
+    LIBRARY_PATH=/opt/spack-environment/.spack-env/view/lib:/opt/spack-environment/.spack-env/view/lib64:$LIBRARY_PATH \
+    PATH=/opt/spack-environment/.spack-env/view/bin:$PATH
+
+# Final runtime stage - lightweight image
+FROM nvcr.io/nvidia/nvhpc:${NVHPC_VERSION}-runtime-cuda${CUDA_VERSION}-ubuntu${UBUNTU_VERSION}
+
+#Need ca-certificates to install with apt via https
+COPY --from=builder /etc/ssl/certs /etc/ssl/certs
+COPY --from=builder /usr/share/ca-certificates /usr/share/ca-certificates
+
+# Install minimal runtime dependencies
+## GFDL system requires secure https
+RUN sed -i -e 's/http:/https:/g' /etc/apt/sources.list.d/ubuntu.sources
+RUN apt-get update -y && \
+    apt-get install -y --no-install-recommends \
+        libgomp1 && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy spack environment from builder
+COPY --from=builder /opt/spack-environment /opt/spack-environment
+
+# Set environment variables
+ENV LD_LIBRARY_PATH=/opt/spack-environment/.spack-env/view/lib:/opt/spack-environment/.spack-env/view/lib64:$LD_LIBRARY_PATH \
+    LIBRARY_PATH=/opt/spack-environment/.spack-env/view/lib:/opt/spack-environment/.spack-env/view/lib64:$LIBRARY_PATH \
+    PATH=/opt/spack-environment/.spack-env/view/bin:$PATH
+
+WORKDIR /opt/work
+ENTRYPOINT ["/bin/bash"]
