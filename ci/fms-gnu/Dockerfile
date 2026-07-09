@@ -1,106 +1,43 @@
-#***********************************************************************
-#*                   GNU Lesser General Public License
-#*
-#* This file is part of the GFDL Flexible Modeling System (FMS).
-#*
-#* FMS is free software: you can redistribute it and/or modify it under
-#* the terms of the GNU Lesser General Public License as published by
-#* the Free Software Foundation, either version 3 of the License, or (at
-#* your option) any later version.
-#*
-#* FMS is distributed in the hope that it will be useful, but WITHOUT
-#* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-#* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-#* for more details.
-#*
-#* You should have received a copy of the GNU Lesser General Public
-#* License along with FMS.  If not, see <http://www.gnu.org/licenses/>.
-#***********************************************************************
-# Build stage with Spack pre-installed and ready to be used
-FROM spack/rockylinux9:latest as builder
+# Dockerfile for FMS GNU CI, uses spack to build then copies to a clean rocky9 OS
+FROM spack/rockylinux9:1.1.1 as builder
 
+RUN . /opt/spack/share/spack/setup-env.sh && \
+    spack install gcc@15.1.0
 
-# What we want to install and how we want to install it
-# is specified in a manifest file (spack.yaml)
-RUN mkdir /opt/spack-environment \
-&&  (echo spack: \
-&&   echo '  specs:' \
-&&   echo '  - gcc@13.2.0' \
-&&   echo '  - mpich@4.1.2' \
-&&   echo '  - netcdf-c@4.9.2 ^hdf5@1.14.2' \
-&&   echo '  - netcdf-fortran@4.6.1' \
-&&   echo '  - libyaml@0.2.5' \
-&&   echo '  concretizer:' \
-&&   echo '    unify: true' \
-&&   echo '    reuse: true' \
-&&   echo '  packages:' \
-&&   echo '    all:' \
-&&   echo '      compiler: [gcc@13.2.0]' \
-&&   echo '  # template file for any extra steps' \
-&&   echo '  config:' \
-&&   echo '    template_dirs:' \
-&&   echo '    - ./' \
-&&   echo '    install_tree: /opt/software' \
-&&   echo '  view: /opt/views/view') > /opt/spack-environment/spack.yaml
+RUN . /opt/spack/share/spack/setup-env.sh && \
+    spack compiler find $(spack location -i gcc@15.1.0) && \
+    spack install openmpi	%gcc@15.1.0
 
-# Install the software, remove unnecessary deps
-RUN cd /opt/spack-environment && spack env activate . && spack install --fail-fast && spack gc -y
+RUN . /opt/spack/share/spack/setup-env.sh && \
+    spack install netcdf-fortran ^openmpi %gcc@15.1.0 \
+                  libyaml %gcc@15.1.0 \
+                  cmake
 
-# Strip all the binaries
-RUN find -L /opt/views/view/* -type f -exec readlink -f '{}' \; | \
-    xargs file -i | \
-    grep 'charset=binary' | \
-    grep 'x-executable\|x-archive\|x-sharedlib' | \
-    awk -F: '{print $1}' | xargs strip
+FROM docker://rockylinux/rockylinux:9
 
-# Modifications to the environment that are necessary to run
-RUN cd /opt/spack-environment && \
-    spack env activate --sh -d . > activate.sh
-
-
-
-# Bare OS image to run the installed executables
-FROM docker.io/rockylinux:9
-
-COPY --from=builder /opt/spack-environment /opt/spack-environment
-COPY --from=builder /opt/software /opt/software
-
-# paths.view is a symlink, so copy the parent to avoid dereferencing and duplicating it
-COPY --from=builder /opt/views /opt/views
-
-RUN { \
-      echo '#!/bin/sh' \
-      && echo '.' /opt/spack-environment/activate.sh \
-      && echo 'exec "$@"'; \
-    } > /entrypoint.sh \
-&& chmod a+x /entrypoint.sh \
-&& ln -s /opt/views/view /opt/view
-
-
-RUN dnf update -y && dnf install -y epel-release && dnf update -y \
- && dnf install -y autoconf make automake m4 libtool pkg-config zip diffutils git libgomp cmake \
- && rm -rf /var/cache/dnf && dnf clean all
-
-# Copy input files for certain unit tests
+COPY --from=builder /opt/spack/opt/spack /opt/spack/opt/spack
 COPY ./fms_test_input /home/unit_tests_input
-# Fix libgcc link
-RUN ranlib -U /opt/software/linux-rocky9-skylake/gcc-*/gcc-*/lib/gcc/x86_64-pc-linux-gnu/*/libgcc.a
-# Any env vars needed, most of these are also set by the entrypoint but it is not run for github actions
-ENV MPICH_FC=/opt/views/view/bin/gfortran
-ENV MPICH_CC=/opt/views/view/bin/gcc
-ENV FC=/opt/views/view/bin/mpifort
-ENV CC=/opt/views/view/bin/mpicc
-ENV FCFLAGS="-I/opt/views/view/include"
-ENV CFLAGS="-I/opt/views/view/include"
-ENV LDFLAGS="-L/opt/views/view/lib"
-ENV LD_LIBRARY_PATH="/opt/views/view/lib64:/opt/views/view/lib"
-ENV PATH="/root/.local/bin:/root/bin:/opt/views/view/bin:/opt/spack/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-LABEL "maintainer"="Ryan Mulhall <Ryan.Mulhall@noaa.gov>"
-LABEL "copyright"="2024 GFDL"
-LABEL "license"="LGPL v3+"
-LABEL "gov.noaa.gfdl.version"="1.0.0"
-LABEL "vendor"="Geophysical Fluid Dynamics Laboratory"
-LABEL "gov.noaa.gfdl.release-date"="2024-02-06"
-ENTRYPOINT [ "/entrypoint.sh" ]
-CMD [ "/bin/bash" ]
 
+RUN useradd -m -u 1001 -d /home/ci -s /usr/bin/bash ci
+RUN dnf install -y git make zip glibc-devel
+
+# set up compilers/flags specifically for FMS
+
+ENV NETCDF_C_PREFIX="/opt/spack/opt/spack/linux-zen2/netcdf-c-4.9.3-a2gu6sa2lriuxhbzthjjy6jbulazjkwa/" 				\
+    NETCDF_F_PREFIX="/opt/spack/opt/spack/linux-zen2/netcdf-fortran-4.6.2-7i2re4acodpxc4gejdxb7wncvj76o74e/"	\
+		LIBYAML_PREFIX="/opt/spack/opt/spack/linux-zen2/libyaml-0.2.5-xuljyrxccztirq44qurx6suwvz2axatg/"
+
+ENV CC=mpicc FC=mpifort \
+    CFLAGS="-I${NETCDF_C_PREFIX}/include -I${LIBYAML_PREFIX}/include" \
+    FCFLAGS="-I${NETCDF_F_PREFIX}/include" 														\
+		LDFLAGS="-L${NETCDF_C_PREFIX}/lib -L${NETCDF_F_PREFIX}/lib -L${LIBYAML_PREFIX}/lib"
+
+# set up environment to use our spack-built packages
+ENV PATH=/opt/spack/opt/spack/linux-zen2/cmake-3.31.9-t344wjce4j6pwsuujepwkoioamwwpnpo/bin:/opt/spack/opt/spack/linux-zen2/gcc-15.1.0-appvbdb3saeqyal56k7pubrdjfcp5axt/bin:/opt/spack/opt/spack/linux-zen2/netcdf-fortran-4.6.2-7i2re4acodpxc4gejdxb7wncvj76o74e/bin:/opt/spack/opt/spack/linux-zen2/autoconf-2.72-a6sc4lqvnotu5hgkqxeavxmsrvsb2phj/bin:/opt/spack/opt/spack/linux-zen2/automake-1.16.5-cff524o4uu65v3q6gdqgxdffpsksz2ea/bin:/opt/spack/opt/spack/linux-zen2/libtool-2.4.7-mwa2vcxsixriahre2ewt4xwf25crxcq4/bin:/opt/spack/opt/spack/linux-zen2/netcdf-c-4.9.3-a2gu6sa2lriuxhbzthjjy6jbulazjkwa/bin:/opt/spack/opt/spack/linux-zen2/m4-1.4.20-hlqjkxfwt74n3v2e4eg6tnlvwns34l6w/bin:/opt/spack/opt/spack/linux-zen2/perl-5.42.0-vqwya62ctx74qau56gftatmqoeyebpy2/bin:/opt/spack/opt/spack/linux-zen2/findutils-4.10.0-yiw3vzlxohwwutmzehy22zf3gls5nfvc/bin:/opt/spack/opt/spack/linux-zen2/pkgconf-2.5.1-tvlumlcpapjraaolhyuyterggupdjigr/bin:/opt/spack/opt/spack/linux-zen2/openssh-9.9p1-zyrz5hxdreofzrxplbgkheeinwzy4zr6/bin:/opt/spack/opt/spack/linux-zen2/tar-1.35-bqfo5qjwtvyd4ddfcqpksiiqmqvgi6co/bin:/opt/spack/opt/spack/linux-zen2/bzip2-1.0.8-3kxpqq4xyoh2kwx6bdstvtjop7kqfifc/bin:/opt/spack/opt/spack/linux-zen2/pigz-2.8-cxc27kj5lgxfrm5jml3cgyvds2ouajbz/bin:/opt/spack/opt/spack/linux-zen2/zstd-1.5.7-t5tyekdcot5l4ntlno6eyfhyvogkjogw/bin:/opt/spack/opt/spack/linux-zen2/xz-5.6.3-fxvxcoby4k5lqr2snd3nmkxidrfwalgx/bin:/opt/spack/opt/spack/linux-zen2/gcc-15.1.0-appvbdb3saeqyal56k7pubrdjfcp5axt/bin:/opt/spack/opt/spack/linux-zen2/netcdf-fortran-4.6.2-7i2re4acodpxc4gejdxb7wncvj76o74e/bin:/opt/spack/opt/spack/linux-zen2/autoconf-2.72-a6sc4lqvnotu5hgkqxeavxmsrvsb2phj/bin:/opt/spack/opt/spack/linux-zen2/automake-1.16.5-cff524o4uu65v3q6gdqgxdffpsksz2ea/bin:/opt/spack/opt/spack/linux-zen2/libtool-2.4.7-mwa2vcxsixriahre2ewt4xwf25crxcq4/bin:/opt/spack/opt/spack/linux-zen2/netcdf-c-4.9.3-a2gu6sa2lriuxhbzthjjy6jbulazjkwa/bin:/opt/spack/opt/spack/linux-zen2/m4-1.4.20-hlqjkxfwt74n3v2e4eg6tnlvwns34l6w/bin:/opt/spack/opt/spack/linux-zen2/perl-5.42.0-vqwya62ctx74qau56gftatmqoeyebpy2/bin:/opt/spack/opt/spack/linux-zen2/findutils-4.10.0-yiw3vzlxohwwutmzehy22zf3gls5nfvc/bin:/opt/spack/opt/spack/linux-zen2/hdf5-1.14.6-bcunndtoh5rtpnoozuipmsctszjfpfr5/bin:/opt/spack/opt/spack/linux-zen2/berkeley-db-18.1.40-62rknlud5yhbmrxzh6i62zet7od7zai5/bin:/opt/spack/opt/spack/linux-zen2/gdbm-1.25-xxzhozp6yepwdfpb37nja2n3wdviwhnu/bin:/opt/spack/opt/spack/linux-zen2/lz4-1.10.0-nn4tfge2utfk7dcyiy7ecp4zthe7ntfy/bin:/opt/spack/opt/spack/linux-zen2/openmpi-5.0.8-uu7camd6rexnptv3id6eq7ftidz3ghjl/bin:/opt/spack/opt/spack/linux-zen2/pkgconf-2.5.1-tvlumlcpapjraaolhyuyterggupdjigr/bin:/opt/spack/opt/spack/linux-zen2/readline-8.3-5mynowtt2v2twrf2nvnzkan6e5mmluot/bin:/opt/spack/opt/spack/linux-zen2/numactl-2.0.18-ggo7vmkmyr5g2vf5bv5gn5gg6hviosfp/bin:/opt/spack/opt/spack/linux-zen2/openssh-9.9p1-zyrz5hxdreofzrxplbgkheeinwzy4zr6/bin:/opt/spack/opt/spack/linux-zen2/prrte-4.0.0-gqpdjuwybiqpydfii3mxaku5uxpwhprm/bin:/opt/spack/opt/spack/linux-zen2/krb5-1.21.3-46kj3tpnvsc3ddaws5mmi3z2peaxgrfc/bin:/opt/spack/opt/spack/linux-zen2/pmix-6.0.0-2sde2xeqkd6gy4li26q6csyb2wv3mwfy/bin:/opt/spack/opt/spack/linux-zen2/gettext-0.23.1-romxo3fmkwz4wk3bprqlzb3o5uox6re6/bin:/opt/spack/opt/spack/linux-zen2/hwloc-2.12.2-qzoed3sfrs553uxwfnwmyfblmxyehckz/bin:/opt/spack/opt/spack/linux-zen2/libevent-2.1.12-bhh5s2ou7vgzv4giufwzh2pnna4ovq7y/bin:/opt/spack/opt/spack/linux-zen2/tar-1.35-bqfo5qjwtvyd4ddfcqpksiiqmqvgi6co/bin:/opt/spack/opt/spack/linux-zen2/libxml2-2.13.5-fz2vtu4tbwdds2ntfnqakztv7czxlw5j/bin:/opt/spack/opt/spack/linux-zen2/ncurses-6.5-20250705-yq6tjean7whk27coynwronek27extxnn/bin:/opt/spack/opt/spack/linux-zen2/openssl-3.6.0-zomwj2nj6cxxruay2ealuyfqwl3ltxpz/bin:/opt/spack/opt/spack/linux-zen2/bzip2-1.0.8-3kxpqq4xyoh2kwx6bdstvtjop7kqfifc/bin:/opt/spack/opt/spack/linux-zen2/pigz-2.8-cxc27kj5lgxfrm5jml3cgyvds2ouajbz/bin:/opt/spack/opt/spack/linux-zen2/zstd-1.5.7-t5tyekdcot5l4ntlno6eyfhyvogkjogw/bin:/opt/spack/opt/spack/linux-zen2/libiconv-1.18-tetgn7i4snixdpnvfpj4ype5qwcfazqc/bin:/opt/spack/opt/spack/linux-zen2/xz-5.6.3-fxvxcoby4k5lqr2snd3nmkxidrfwalgx/bin:/home/ci/.local/bin:/home/ci/bin:/bin:/opt/spack/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ENV PKG_CONFIG_PATH=/opt/spack/opt/spack/linux-zen2/netcdf-fortran-4.6.2-7i2re4acodpxc4gejdxb7wncvj76o74e/lib/pkgconfig:/opt/spack/opt/spack/linux-zen2/libyaml-0.2.5-xuljyrxccztirq44qurx6suwvz2axatg/lib/pkgconfig:/opt/spack/opt/spack/linux-zen2/netcdf-c-4.9.3-a2gu6sa2lriuxhbzthjjy6jbulazjkwa/lib/pkgconfig:/opt/spack/opt/spack/linux-zen2/mpfr-4.2.1-tzvzg6cq25szcyewmvuxsxpf4ychxokx/lib/pkgconfig:/opt/spack/opt/spack/linux-zen2/c-blosc-1.21.6-3tufb56xy6syzzgnrlp7zseptgdflurb/lib64/pkgconfig:/opt/spack/opt/spack/linux-zen2/hdf5-1.14.6-bcunndtoh5rtpnoozuipmsctszjfpfr5/lib/pkgconfig:/opt/spack/opt/spack/linux-zen2/gmp-6.3.0-gqwvu56yadzvnqnoho2fslbtkztf5cnj/lib/pkgconfig:/opt/spack/opt/spack/linux-zen2/lz4-1.10.0-nn4tfge2utfk7dcyiy7ecp4zthe7ntfy/lib/pkgconfig:/opt/spack/opt/spack/linux-zen2/snappy-1.2.1-6uf3ealq4n7tkcwnaiin7soxgxkh2koz/lib/pkgconfig:/opt/spack/opt/spack/linux-zen2/openmpi-5.0.8-uu7camd6rexnptv3id6eq7ftidz3ghjl/lib/pkgconfig:/opt/spack/opt/spack/linux-zen2/pkgconf-2.5.1-tvlumlcpapjraaolhyuyterggupdjigr/lib/pkgconfig:/opt/spack/opt/spack/linux-zen2/readline-8.3-5mynowtt2v2twrf2nvnzkan6e5mmluot/lib/pkgconfig:/opt/spack/opt/spack/linux-zen2/numactl-2.0.18-ggo7vmkmyr5g2vf5bv5gn5gg6hviosfp/lib/pkgconfig:/opt/spack/opt/spack/linux-zen2/krb5-1.21.3-46kj3tpnvsc3ddaws5mmi3z2peaxgrfc/lib/pkgconfig:/opt/spack/opt/spack/linux-zen2/libxcrypt-4.4.38-yhq6utgpmxdhraqcl7ejsa7uadfmmww6/lib/pkgconfig:/opt/spack/opt/spack/linux-zen2/pmix-6.0.0-2sde2xeqkd6gy4li26q6csyb2wv3mwfy/lib/pkgconfig:/opt/spack/opt/spack/linux-zen2/libedit-3.1-20240808-5u4sfiselroy2hgsg7agm7gccmzoxtmh/lib/pkgconfig:/opt/spack/opt/spack/linux-zen2/hwloc-2.12.2-qzoed3sfrs553uxwfnwmyfblmxyehckz/lib/pkgconfig:/opt/spack/opt/spack/linux-zen2/libevent-2.1.12-bhh5s2ou7vgzv4giufwzh2pnna4ovq7y/lib/pkgconfig:/opt/spack/opt/spack/linux-zen2/libpciaccess-0.17-3dqyewljejkkjib2idvasqa4pvmmngan/lib/pkgconfig:/opt/spack/opt/spack/linux-zen2/libxml2-2.13.5-fz2vtu4tbwdds2ntfnqakztv7czxlw5j/lib/pkgconfig:/opt/spack/opt/spack/linux-zen2/ncurses-6.5-20250705-yq6tjean7whk27coynwronek27extxnn/lib/pkgconfig:/opt/spack/opt/spack/linux-zen2/openssl-3.6.0-zomwj2nj6cxxruay2ealuyfqwl3ltxpz/lib64/pkgconfig:/opt/spack/opt/spack/linux-zen2/bzip2-1.0.8-3kxpqq4xyoh2kwx6bdstvtjop7kqfifc/lib/pkgconfig:/opt/spack/opt/spack/linux-zen2/zstd-1.5.7-t5tyekdcot5l4ntlno6eyfhyvogkjogw/lib/pkgconfig:/opt/spack/opt/spack/linux-zen2/xz-5.6.3-fxvxcoby4k5lqr2snd3nmkxidrfwalgx/lib/pkgconfig:/opt/spack/opt/spack/linux-zen2/zlib-ng-2.2.4-zcaep5xf2cph6sruroctvjloqx5d2yv4/lib/pkgconfig:/usr/share/pkgconfig:/usr/lib64/pkgconfig
+ENV CMAKE_PREFIX_PATH=/opt/spack/opt/spack/linux-zen2/gcc-15.1.0-appvbdb3saeqyal56k7pubrdjfcp5axt:/opt/spack/opt/spack/linux-zen2/netcdf-fortran-4.6.2-7i2re4acodpxc4gejdxb7wncvj76o74e:/opt/spack/opt/spack/linux-zen2/libyaml-0.2.5-xuljyrxccztirq44qurx6suwvz2axatg:/opt/spack/opt/spack/linux-zen2/autoconf-2.72-a6sc4lqvnotu5hgkqxeavxmsrvsb2phj:/opt/spack/opt/spack/linux-zen2/automake-1.16.5-cff524o4uu65v3q6gdqgxdffpsksz2ea:/opt/spack/opt/spack/linux-zen2/autoconf-archive-2023.02.20-gqw76us3wsyjs4d4tq7uzd4em3s7upob:/opt/spack/opt/spack/linux-zen2/libtool-2.4.7-mwa2vcxsixriahre2ewt4xwf25crxcq4:/opt/spack/opt/spack/linux-zen2/mpc-1.3.1-btkgint7bopbr73hg5f5bodn363w4jgj:/opt/spack/opt/spack/linux-zen2/netcdf-c-4.9.3-a2gu6sa2lriuxhbzthjjy6jbulazjkwa:/opt/spack/opt/spack/linux-zen2/m4-1.4.20-hlqjkxfwt74n3v2e4eg6tnlvwns34l6w:/opt/spack/opt/spack/linux-zen2/perl-5.42.0-vqwya62ctx74qau56gftatmqoeyebpy2:/opt/spack/opt/spack/linux-zen2/findutils-4.10.0-yiw3vzlxohwwutmzehy22zf3gls5nfvc:/opt/spack/opt/spack/linux-zen2/mpfr-4.2.1-tzvzg6cq25szcyewmvuxsxpf4ychxokx:/opt/spack/opt/spack/linux-zen2/c-blosc-1.21.6-3tufb56xy6syzzgnrlp7zseptgdflurb:/opt/spack/opt/spack/linux-zen2/hdf5-1.14.6-bcunndtoh5rtpnoozuipmsctszjfpfr5:/opt/spack/opt/spack/linux-zen2/libaec-1.1.4-k2pwqnn6jo7ketzs57oisv47xekbtscn:/opt/spack/opt/spack/linux-zen2/libsigsegv-2.14-r36hjti7rda3bffvmhdlbr6hi4kqapzb:/opt/spack/opt/spack/linux-zen2/berkeley-db-18.1.40-62rknlud5yhbmrxzh6i62zet7od7zai5:/opt/spack/opt/spack/linux-zen2/gdbm-1.25-xxzhozp6yepwdfpb37nja2n3wdviwhnu:/opt/spack/opt/spack/linux-zen2/gmp-6.3.0-gqwvu56yadzvnqnoho2fslbtkztf5cnj:/opt/spack/opt/spack/linux-zen2/lz4-1.10.0-nn4tfge2utfk7dcyiy7ecp4zthe7ntfy:/opt/spack/opt/spack/linux-zen2/snappy-1.2.1-6uf3ealq4n7tkcwnaiin7soxgxkh2koz:/opt/spack/opt/spack/linux-zen2/openmpi-5.0.8-uu7camd6rexnptv3id6eq7ftidz3ghjl:/opt/spack/opt/spack/linux-zen2/pkgconf-2.5.1-tvlumlcpapjraaolhyuyterggupdjigr:/opt/spack/opt/spack/linux-zen2/readline-8.3-5mynowtt2v2twrf2nvnzkan6e5mmluot:/opt/spack/opt/spack/linux-zen2/numactl-2.0.18-ggo7vmkmyr5g2vf5bv5gn5gg6hviosfp:/opt/spack/opt/spack/linux-zen2/openssh-9.9p1-zyrz5hxdreofzrxplbgkheeinwzy4zr6:/opt/spack/opt/spack/linux-zen2/prrte-4.0.0-gqpdjuwybiqpydfii3mxaku5uxpwhprm:/opt/spack/opt/spack/linux-zen2/krb5-1.21.3-46kj3tpnvsc3ddaws5mmi3z2peaxgrfc:/opt/spack/opt/spack/linux-zen2/libxcrypt-4.4.38-yhq6utgpmxdhraqcl7ejsa7uadfmmww6:/opt/spack/opt/spack/linux-zen2/pmix-6.0.0-2sde2xeqkd6gy4li26q6csyb2wv3mwfy:/opt/spack/opt/spack/linux-zen2/gettext-0.23.1-romxo3fmkwz4wk3bprqlzb3o5uox6re6:/opt/spack/opt/spack/linux-zen2/libedit-3.1-20240808-5u4sfiselroy2hgsg7agm7gccmzoxtmh:/opt/spack/opt/spack/linux-zen2/hwloc-2.12.2-qzoed3sfrs553uxwfnwmyfblmxyehckz:/opt/spack/opt/spack/linux-zen2/libevent-2.1.12-bhh5s2ou7vgzv4giufwzh2pnna4ovq7y:/opt/spack/opt/spack/linux-zen2/tar-1.35-bqfo5qjwtvyd4ddfcqpksiiqmqvgi6co:/opt/spack/opt/spack/linux-zen2/libpciaccess-0.17-3dqyewljejkkjib2idvasqa4pvmmngan:/opt/spack/opt/spack/linux-zen2/libxml2-2.13.5-fz2vtu4tbwdds2ntfnqakztv7czxlw5j:/opt/spack/opt/spack/linux-zen2/ncurses-6.5-20250705-yq6tjean7whk27coynwronek27extxnn:/opt/spack/opt/spack/linux-zen2/openssl-3.6.0-zomwj2nj6cxxruay2ealuyfqwl3ltxpz:/opt/spack/opt/spack/linux-zen2/bzip2-1.0.8-3kxpqq4xyoh2kwx6bdstvtjop7kqfifc:/opt/spack/opt/spack/linux-zen2/pigz-2.8-cxc27kj5lgxfrm5jml3cgyvds2ouajbz:/opt/spack/opt/spack/linux-zen2/zstd-1.5.7-t5tyekdcot5l4ntlno6eyfhyvogkjogw:/opt/spack/opt/spack/linux-zen2/libiconv-1.18-tetgn7i4snixdpnvfpj4ype5qwcfazqc:/opt/spack/opt/spack/linux-zen2/xz-5.6.3-fxvxcoby4k5lqr2snd3nmkxidrfwalgx:/opt/spack/opt/spack/linux-zen2/gcc-runtime-15.1.0-lezxlqkjfjrnpbeczg2loonlizbx5btf:/opt/spack/opt/spack/linux-zen2/zlib-ng-2.2.4-zcaep5xf2cph6sruroctvjloqx5d2yv4:/opt/spack/opt/spack/linux-zen2/gcc-runtime-11.5.0-7vgrrumjty5prk4vw5b6hzdrywpzyoxg
+ENV ACLOCAL_PATH=/opt/spack/opt/spack/linux-zen2/automake-1.16.5-cff524o4uu65v3q6gdqgxdffpsksz2ea/share/aclocal:/opt/spack/opt/spack/linux-zen2/autoconf-archive-2023.02.20-gqw76us3wsyjs4d4tq7uzd4em3s7upob/share/aclocal:/opt/spack/opt/spack/linux-zen2/libtool-2.4.7-mwa2vcxsixriahre2ewt4xwf25crxcq4/share/aclocal:/opt/spack/opt/spack/linux-zen2/pkgconf-2.5.1-tvlumlcpapjraaolhyuyterggupdjigr/share/aclocal:/opt/spack/opt/spack/linux-zen2/gettext-0.23.1-romxo3fmkwz4wk3bprqlzb3o5uox6re6/share/aclocal:/opt/spack/opt/spack/linux-zen2/libxml2-2.13.5-fz2vtu4tbwdds2ntfnqakztv7czxlw5j/share/aclocal:/usr/share/aclocal
+ENV LD_LIBRARY_PATH="/opt/spack/opt/spack/linux-zen2/hdf5-1.14.6-bcunndtoh5rtpnoozuipmsctszjfpfr5/lib:/opt/spack/opt/spack/linux-zen2/netcdf-fortran-4.6.2-7i2re4acodpxc4gejdxb7wncvj76o74e/lib:/opt/spack/opt/spack/linux-zen2/netcdf-c-4.9.3-a2gu6sa2lriuxhbzthjjy6jbulazjkwa/lib:/opt/spack/opt/spack/linux-zen2/libyaml-0.2.5-xuljyrxccztirq44qurx6suwvz2axatg/lib"
+
+USER ci
+WORKDIR /home/ci
