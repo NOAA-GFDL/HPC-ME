@@ -36,14 +36,13 @@ default:
       unqualified-search-registries = ["docker.io"]
       short-name-mode = "permissive"
       EOF
-    - podman login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $REGISTRY
+    - podman login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" gitlab.gfdl.noaa.gov
 
 variables:
-  IMAGE: $REGISTRY/$APP-$OS-$COMPILER_TYPE:$COMPILER_VERSION
+  IMAGE: $CI_REGISTRY_IMAGE/$APP-$OS-$COMPILER_TYPE:$COMPILER_VERSION
   SECURE_LOG_LEVEL: debug
   CS_SEVERITY_THRESHOLD: MEDIUM
   CS_ANALYZER_IMAGE: registry.gitlab.com/security-products/container-scanning:4
-  REGISTRY: gitlab.gfdl.noaa.gov
 
 stages:
   - mirror
