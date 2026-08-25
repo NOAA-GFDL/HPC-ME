@@ -20,7 +20,7 @@ trigger-build:
     include: .gitlab-ci-builds.yml
     strategy: depend
   rules:
-  - if: '$CI_PIPELINE_SOURCE == "merge_request_event" 
+  - if: '$CI_PIPELINE_SOURCE == "merge_request_event"' 
 
 trigger-clean:
     # Route to the cleanup pipeline ONLY if triggered by a schedule
