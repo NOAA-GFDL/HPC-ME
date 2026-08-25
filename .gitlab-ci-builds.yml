@@ -20,7 +20,7 @@ workflow:
 # Mirror an image from an external GitLab registry into this project's registry.
 .mirrorScript: &mirrorScript
   script:
-    - echo $SOURCE_REGISTRY_PASSWORD | podman login -u "$SOURCE_REGISTRY_USER" --password-stdin $SOURCE_REGISTRY
+    - podman login -u "$SOURCE_REGISTRY_USER" -p "$SOURCE_REGISTRY_PAT" $SOURCE_REGISTRY
     - podman pull "$SOURCE_IMAGE"
     - podman tag "$SOURCE_IMAGE" "$IMAGE"
     - podman push "$IMAGE"
