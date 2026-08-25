@@ -45,8 +45,8 @@ variables:
   CS_ANALYZER_IMAGE: registry.gitlab.com/security-products/container-scanning:4
 
 stages:
-  - build
   - mirror
+  - build
   - cleanup
 
 build-ubuntu24.04-intel2025:
