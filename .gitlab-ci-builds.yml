@@ -17,6 +17,14 @@ workflow:
   rules:
   - when: always
 
+# Mirror an image from an external GitLab registry into this project's registry.
+.mirrorScript: &mirrorScript
+  script:
+    - podman login -u "$SOURCE_REGISTRY_USER" -p "$SOURCE_REGISTRY_PAT" $SOURCE_REGISTRY
+    - podman pull "$SOURCE_IMAGE"
+    - podman tag "$SOURCE_IMAGE" "$IMAGE"
+    - podman push "$IMAGE"
+
 default:
   tags: [hpc-me]
   before_script:
@@ -37,6 +45,7 @@ variables:
   CS_ANALYZER_IMAGE: registry.gitlab.com/security-products/container-scanning:4
 
 stages:
+  - mirror
   - build
   - cleanup
 
@@ -127,6 +136,21 @@ build-rockylinux9-nvhpc25.11-rte:
     COMPILER_TYPE: nvhpc
     COMPILER_VERSION: 25.11rte
   <<: *buildScript
+
+mirror-image:
+  stage: mirror
+  extends: .buildRules
+  variables:
+    SOURCE_REGISTRY: registry.rdhpcs.noaa.gov
+    SOURCE_IMAGE: registry.rdhpcs.noaa.gov/containers/hpc-me/2026.01.01-image:spack-release-test-gcc
+    APP: "spack-release"
+    OS: rockylinux8
+    COMPILER_TYPE: gcc
+    COMPILER_VERSION: 14.3
+  rules:
+    - when: manual
+      allow_failure: false
+  <<: *mirrorScript
 
 pipeline-cleanup:
   stage: cleanup
